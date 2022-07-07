@@ -3,27 +3,19 @@
 #include <SDL2\\SDL.h>
 
 #include "front.h"
-#include "front_tools.h"
 #include "game_config.h"
+#include "obj.h"
+#include "parse.h"
 #include "player.h"
-#include "level.h"
+#include "render.h"
+#include "update.h"
 
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     front_Init(); // Initializing Frontend (windows and stuff)
 
-
-    struct player_Player Player = player_Init(); // Initialize Player
-    printf("Reading map... ");
-    struct level_BarrierMap* Barriers = level_ParseMapFile("maps\\alone.map");
-    if (Barriers != NULL && Barriers->next != NULL) {
-        printf("Successfully created Barrier array of length 2\n");
-    }
-    printf("Success!\n");
-    int BarrierColor[3] = {255, 255, 255};
-
-
-    // Initializing some variables before the game loop
+    // Initializing Frontend Variables
     SDL_Event InputEvent;
     bool InputKeys[322]; // Contains bools for all SDL keys. true = key is pressed, false = key isn't pressed.
     for(int i = 0; i < 322; i++) { // Init them all to false first
@@ -33,6 +25,16 @@ int main(int argc, char* argv[]) {
     bool IsRunning = true;
 
 
+    // Initializing Game Variables
+    player_Player Player = player_Init(); // Initialize Player
+    printf("Parsing map data... \n");
+    parse_ParseResult ParseResult = parse_ParseMapFolder("maps\\test");
+    obj_Barrier* BarriersHead = ParseResult.BarriersParseResult;
+    obj_Entity* EntitiesHead = ParseResult.EntitiesParseResult;
+    printf("Succesfully parsed map data!\n");
+
+
+    printf("\n"); // Separate game errors from initializing errors.
     // Actual Game Loop
     while (IsRunning) {
 
@@ -59,21 +61,21 @@ int main(int argc, char* argv[]) {
 
 
         // Update code here
-        player_Update(&Player, InputKeys, Barriers);
+        update_UpdateBarriers(BarriersHead);
+        player_UpdatePlayer(&Player, InputKeys, BarriersHead, EntitiesHead);
+        update_UpdateEntities(EntitiesHead, BarriersHead);
 
         // Rendering Code Here
-        frontTools_ColorFill(front_Renderer, BGColor, SDL_ALPHA_OPAQUE);
+        render_FillScreenColor(front_Renderer, BGColor, SDL_ALPHA_OPAQUE);
 
-        player_DrawPlayer(front_Renderer, &Player);
-        for (struct level_BarrierMap* Temp = Barriers; Temp != NULL; Temp = Temp->next) {
-            frontTools_DrawRect(front_Renderer, &Temp->Rect, BarrierColor, 255);
-        }
+        render_RenderPlayer(front_Renderer, &Player);
+        render_RenderBarriers(front_Renderer, BarriersHead);
+        render_RenderEntities(front_Renderer, EntitiesHead);
 
         SDL_RenderPresent(front_Renderer);
         SDL_Delay(front_FRAMEPAUSEDELAY);
     }
 
     front_Quit();
-
     return 0;
 }

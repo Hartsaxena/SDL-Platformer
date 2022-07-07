@@ -1,0 +1,10 @@
+Pretty giant commit:
+
+ - Rearranged File structure and a bunch of definition locations
+
+Created:
+ - TODO file
+ - Non-hostile entities
+ - Map folders / Parsing Map Data
+ - Player Dying / Respawning
+ - A ton of other stuff I'm sure but I forgot. I'm making this changes file after I made all the changes (probably won't do that again)

@@ -1,14 +1,6 @@
 #include <stdbool.h>
 #include <SDL2\\SDL.h>
 
+#include "calc.h"
 
-int MAX(int a, int b)
-{
-    return (a > b) ? a : b;
-}
-
-
-int MIN(int a, int b)
-{
-    return (a < b) ? a : b;
-}
+// Note: Some functions are defined as macros in calc.h

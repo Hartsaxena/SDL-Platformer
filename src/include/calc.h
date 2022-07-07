@@ -2,8 +2,8 @@
 #define BARRIER_H
 
 
-int MAX(int a, int b);
-int MIN(int a, int b);
+#define MAX(a, b) ((a > b) ? a : b)
+#define MIN(a, b) ((a < b) ? a : b)
 
 
 #endif
