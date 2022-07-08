@@ -1,4 +1,2 @@
-Added debug mode:
- - Outputs some important steps the program has taken (e.g. Detected player death, Initialized SDL) to the console
-    - This is defined in the short "debug.h" file in the include folder.
-    - At default, debug mode should be `0` or off.
+Cleanup Commit
+ - Cleaned up some of the code: removed some unnecessary `struct` keywords
