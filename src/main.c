@@ -36,11 +36,10 @@ int main(int argc, char* argv[])
     player_Player Player = player_Init(); // Initialize Player
     if (DEBUG_MODE)
         printf("Success!\n");
+
     if (DEBUG_MODE)
         printf("Parsing map data... \n");
-    parse_ParseResult ParseResult = parse_ParseMapFolder("maps\\test");
-    obj_Barrier* BarriersHead = ParseResult.BarriersParseResult;
-    obj_Entity* EntitiesHead = ParseResult.EntitiesParseResult;
+    obj_Map* Map = parse_ParseMapFolder("maps\\test");
     if (DEBUG_MODE)
         printf("Succesfully parsed map data!\n");
 
@@ -72,16 +71,19 @@ int main(int argc, char* argv[])
 
 
         // Update code here
-        update_UpdateBarriers(BarriersHead);
-        player_UpdatePlayer(&Player, InputKeys, BarriersHead, EntitiesHead);
-        update_UpdateEntities(EntitiesHead, BarriersHead);
+        update_UpdateBarriers(Map->BarriersHead);
+        player_UpdatePlayer(&Player, InputKeys, Map->BarriersHead, Map->EntitiesHead);
+        update_UpdateEntities(Map->EntitiesHead, Map->BarriersHead);
 
         // Rendering Code Here
+        // Offset the camera to the player's position.
+        SDL_RenderClear(front_Renderer);
+        render_UpdateCamera(&Player);
         render_FillScreenColor(front_Renderer, BGColor, SDL_ALPHA_OPAQUE);
 
         render_RenderPlayer(front_Renderer, &Player);
-        render_RenderBarriers(front_Renderer, BarriersHead);
-        render_RenderEntities(front_Renderer, EntitiesHead);
+        render_RenderBarriers(front_Renderer, Map->BarriersHead);
+        render_RenderEntities(front_Renderer, Map->EntitiesHead);
 
         SDL_RenderPresent(front_Renderer);
         SDL_Delay(front_FRAMEPAUSEDELAY);

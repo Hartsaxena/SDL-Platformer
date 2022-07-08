@@ -19,5 +19,10 @@ typedef struct obj_Entity {
     struct obj_Entity* next;
 } obj_Entity;
 
+typedef struct obj_Map {
+    obj_Barrier* BarriersHead;
+    obj_Entity* EntitiesHead;
+} obj_Map;
+
 
 #endif

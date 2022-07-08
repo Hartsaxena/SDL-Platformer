@@ -27,13 +27,13 @@ Basically, everything related to the Player (Exceptions listed above) is written
 #include "debug.h"
 
 
-struct player_Player player_Init()
+player_Player player_Init()
 {
     SDL_Rect NewPlayerRect = {
         PLAYER_SPAWN_X, PLAYER_SPAWN_Y,
         PLAYER_HEIGHT, PLAYER_WIDTH
     };
-    struct player_Player NewPlayer = (struct player_Player) {
+    player_Player NewPlayer = (player_Player) {
         .Hitbox = NewPlayerRect,
         .vx = 0, .vy = 0,
         .ax = 0, .ay = 0,
@@ -49,20 +49,7 @@ struct player_Player player_Init()
 bool player_PlayerCheckWindowCollision(SDL_Rect Hitbox)
 {
     // Only disallow hitbox to traverse pass the left and right edges of the window: If the player falls, that's a different story.
-    if (Hitbox.x < 0) {
-        return true;
-    }
-    if (Hitbox.x + Hitbox.w > front_SCREENX) {
-        return true;
-    }
-
-    return false;
-}
-
-
-bool player_PlayerCheckFell(player_Player* Player)
-{
-    return (Player->Hitbox.y + Player->Hitbox.h > front_SCREENY);
+    return (Hitbox.x < 0);
 }
 
 
@@ -90,6 +77,12 @@ bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect H
         }
     }
     return false;
+}
+
+
+bool player_PlayerCheckFell(player_Player* Player)
+{
+    return (Player->Hitbox.y + Player->Hitbox.h > front_SCREENY);
 }
 
 
