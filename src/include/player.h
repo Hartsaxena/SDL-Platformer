@@ -38,15 +38,15 @@ typedef struct player_Player {
 } player_Player;
 
 
-struct player_Player player_Init();
-void render_RenderPlayer(SDL_Renderer* Renderer, struct player_Player* Player);
+player_Player player_Init();
+void render_RenderPlayer(SDL_Renderer* Renderer, player_Player* Player);
 bool player_PlayerCheckWindowCollision(SDL_Rect Hitbox);
 bool player_PlayerCheckFell(player_Player* Player);
-bool player_PlayerCheckCollision(struct obj_Barrier* Barriers, SDL_Rect Hitbox);
+bool player_PlayerCheckCollision(obj_Barrier* Barriers, SDL_Rect Hitbox);
 bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect Hitbox);
-void player_DoInputs(struct player_Player* Player, bool InputKeys[322]);
-void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);
-void player_UpdatePlayer(struct player_Player* Player, bool InputKeys[322], obj_Barrier* Barriers, obj_Entity* EntitiesHead);
+void player_DoInputs(player_Player* Player, bool InputKeys[322]);
+void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);
+void player_UpdatePlayer(player_Player* Player, bool InputKeys[322], obj_Barrier* Barriers, obj_Entity* EntitiesHead);
 
 
 #endif

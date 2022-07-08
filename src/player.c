@@ -27,13 +27,13 @@ Basically, everything related to the Player (Exceptions listed above) is written
 #include "debug.h"
 
 
-struct player_Player player_Init()
+player_Player player_Init()
 {
     SDL_Rect NewPlayerRect = {
         PLAYER_SPAWN_X, PLAYER_SPAWN_Y,
         PLAYER_HEIGHT, PLAYER_WIDTH
     };
-    struct player_Player NewPlayer = (struct player_Player) {
+    player_Player NewPlayer = (player_Player) {
         .Hitbox = NewPlayerRect,
         .vx = 0, .vy = 0,
         .ax = 0, .ay = 0,
@@ -93,7 +93,7 @@ bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect H
 }
 
 
-void player_DoInputs(struct player_Player* Player, bool InputKeys[322])
+void player_DoInputs(player_Player* Player, bool InputKeys[322])
 {
     Player->vx = 0;
     bool Up = InputKeys[SDLK_w];
@@ -127,7 +127,7 @@ void player_DoInputs(struct player_Player* Player, bool InputKeys[322])
 }
 
 
-void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
+void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
 {
     SDL_Rect NewHitbox = {
         Player->Hitbox.x,
@@ -175,7 +175,7 @@ void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, o
 }
 
 
-void player_UpdatePlayer(struct player_Player* Player, bool InputKeys[322], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
+void player_UpdatePlayer(player_Player* Player, bool InputKeys[322], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
 {
     if (Player->alive) {
         player_DoInputs(Player, InputKeys);
