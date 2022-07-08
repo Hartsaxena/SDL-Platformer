@@ -14,6 +14,7 @@ Basically, everything related to the Player (Exceptions listed above) is written
 */
 
 
+#include <stdio.h>
 #include <stdbool.h>
 #include <SDL2\\SDL.h>
 
@@ -23,6 +24,7 @@ Basically, everything related to the Player (Exceptions listed above) is written
 #include "parse.h"
 #include "player.h"
 #include "update.h"
+#include "debug.h"
 
 
 struct player_Player player_Init()
@@ -161,9 +163,14 @@ void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, o
     Player->Hitbox = NewHitbox;
     // Check if the player has fallen
     if (player_PlayerCheckFell(Player)) {
+        if (DEBUG_MODE)
+            printf("Player fell!\n");
         Player->alive = false;
     } else if (player_PlayerCheckEnemyEntityCollision(EntitiesHead, Player->Hitbox)) { // Check if the player has touched another enemy entity
         Player->alive = false;
+        if (DEBUG_MODE) {
+            printf("Player has touched an enemy entity.\n");
+        }
     }
 }
 
@@ -178,5 +185,8 @@ void player_UpdatePlayer(struct player_Player* Player, bool InputKeys[322], obj_
 
         // For now, just instantly respawn the player when they die
         *Player = player_Init();
+        if (DEBUG_MODE) {
+            printf("Created new Player instance.\n");
+        }
     }
 }

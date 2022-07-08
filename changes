@@ -1,10 +1,4 @@
-Pretty giant commit:
-
- - Rearranged File structure and a bunch of definition locations
-
-Created:
- - TODO file
- - Non-hostile entities
- - Map folders / Parsing Map Data
- - Player Dying / Respawning
- - A ton of other stuff I'm sure but I forgot. I'm making this changes file after I made all the changes (probably won't do that again)
+Added debug mode:
+ - Outputs some important steps the program has taken (e.g. Detected player death, Initialized SDL) to the console
+    - This is defined in the short "debug.h" file in the include folder.
+    - At default, debug mode should be `0` or off.

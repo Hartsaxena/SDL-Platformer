@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <SDL2\\SDL.h>
 
+#include "debug.h"
 #include "front.h"
 #include "game_config.h"
 #include "obj.h"
@@ -13,6 +14,7 @@
 
 int main(int argc, char* argv[])
 {
+    printf("Loading...\n");
     front_Init(); // Initializing Frontend (windows and stuff)
 
     // Initializing Frontend Variables
@@ -26,15 +28,24 @@ int main(int argc, char* argv[])
 
 
     // Initializing Game Variables
+    if (DEBUG_MODE) {
+        printf("Initializing Game Variables...\n");
+    }
+    if (DEBUG_MODE)
+        printf("Initializing Player... ");
     player_Player Player = player_Init(); // Initialize Player
-    printf("Parsing map data... \n");
+    if (DEBUG_MODE)
+        printf("Success!\n");
+    if (DEBUG_MODE)
+        printf("Parsing map data... \n");
     parse_ParseResult ParseResult = parse_ParseMapFolder("maps\\test");
     obj_Barrier* BarriersHead = ParseResult.BarriersParseResult;
     obj_Entity* EntitiesHead = ParseResult.EntitiesParseResult;
-    printf("Succesfully parsed map data!\n");
+    if (DEBUG_MODE)
+        printf("Succesfully parsed map data!\n");
 
 
-    printf("\n"); // Separate game errors from initializing errors.
+    printf("Finished Loading!\n\n"); // Separate game errors from initializing errors.
     // Actual Game Loop
     while (IsRunning) {
 

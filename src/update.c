@@ -13,6 +13,7 @@ Those functions are generally found in the `render.c` file at the time of this b
 #include "game_config.h"
 #include "parse.h"
 #include "update.h"
+#include "debug.h"
 
 
 bool update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
@@ -67,7 +68,9 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
             break;
         }
         default: {
-            fprintf(stderr, "FATAL ERROR: Entity->State not defined.\n");
+            if (DEBUG_MODE) {
+                printf("Entity State %d is not implemented.\n", EntityPtr->State);
+            }
             abort();
         }
     }

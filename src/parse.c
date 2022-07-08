@@ -6,6 +6,7 @@
 #include "obj.h"
 #include "update.h"
 #include "parse.h"
+#include "debug.h"
 
 
 obj_Barrier* parse_ParseBarrFile(char* FilePath)
@@ -33,7 +34,9 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
     while (fgets(BarrierString, BarrierStringMaxSize, MapFile) != NULL) {
         BarrierDataCurr = malloc(sizeof(obj_Barrier));
         if (BarrierDataCurr == NULL) {
-            fprintf(stderr, "FATAL ERROR: Could not allocate memory to BarrierDataPtr while parsing map file.\n");
+            if (DEBUG_MODE) {
+                printf("Error: Could not allocate memory for a new Barrier.\n");
+            }
             abort();
         }
 
@@ -90,7 +93,9 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
     while (fgets(EntityString, EntityStringMaxSize, EntFile) != NULL) {
         EntityDataCurr = malloc(sizeof(obj_Entity));
         if (EntityDataCurr == NULL) {
-            fprintf(stderr, "FATAL ERROR: Could not allocate memory to EntityDataCurr while parsing map file.\n");
+            if (DEBUG_MODE) {
+                printf("Error: Could not allocate memoory for a new Entity.\n");
+            }
             abort();
         }
 
@@ -139,7 +144,9 @@ parse_ParseResult parse_ParseMapFolder(char* FolderPath)
     ParseResult.EntitiesParseResult = malloc(sizeof(obj_Entity));
     if (ParseResult.BarriersParseResult == NULL ||
         ParseResult.EntitiesParseResult == NULL) {
-        fprintf(stderr, "FATAL ERROR: Allocating memory to Parse Result members failed.\n");
+        if (DEBUG_MODE) {
+            printf("Error: Could not allocate memory for the Parse Result.\n");
+        }
         abort();
     }
 
@@ -149,13 +156,17 @@ parse_ParseResult parse_ParseMapFolder(char* FolderPath)
     snprintf(BarriersFilePath, 256, "%s\\barr", FolderPath);
     snprintf(EntitiesFilePath, 256, "%s\\ent", FolderPath);
 
-    printf("\tParsing %s as barr file... ", BarriersFilePath);
+    if (DEBUG_MODE)
+        printf("\tParsing %s as barr file... ", BarriersFilePath);
     ParseResult.BarriersParseResult = parse_ParseBarrFile(BarriersFilePath);
-    printf("Success!\n");
+    if (DEBUG_MODE)
+        printf("Success!\n");
 
-    printf("\tParsing %s as ent file... ", EntitiesFilePath);
+    if (DEBUG_MODE)
+        printf("\tParsing %s as ent file... ", EntitiesFilePath);
     ParseResult.EntitiesParseResult = parse_ParseEntFile(EntitiesFilePath);
-    printf("Success!\n");
+    if (DEBUG_MODE)
+        printf("Success!\n");
 
     return ParseResult;
 }

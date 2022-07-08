@@ -2,6 +2,7 @@
 #include <SDL2\\SDL.h>
 
 #include "front.h"
+#include "debug.h"
 
 
 SDL_Window* front_Window;
@@ -22,12 +23,14 @@ void front_Quit()
 
 int front_Init()
 {
-    printf("Initializing SDL... ");
+    if (DEBUG_MODE)
+        printf("Initializing SDL... ");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { // Initialize SDL
         printf("FATAL ERROR: %s\n", SDL_GetError());
         front_Quit();
     }
-    printf("Success!\n");
+    if (DEBUG_MODE)
+        printf("Success!\n");
 
     front_Window = SDL_CreateWindow(front_WINDOWTITLE,
                                     SDL_WINDOWPOS_UNDEFINED,
@@ -36,11 +39,13 @@ int front_Init()
                                     SDL_WINDOW_SHOWN);
     front_Renderer = SDL_CreateRenderer(front_Window, -1, SDL_RENDERER_ACCELERATED);
 
-    printf("Creating Display Window... ");
+    if (DEBUG_MODE)
+        printf("Creating Display Window... ");
     if (front_Window == NULL) {
         printf("FATAL ERROR: Window could not be displayed.\n");
         front_Quit();
     }
-    printf("Success!\n");
+    if (DEBUG_MODE)
+        printf("Success!\n");
     return 0;
 }
