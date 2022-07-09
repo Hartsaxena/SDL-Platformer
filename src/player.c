@@ -60,7 +60,16 @@ int player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
     }
 
     for (obj_Barrier* BarrierPtr = BarriersHead; BarrierPtr != NULL; BarrierPtr = BarrierPtr->next) {
-        if (SDL_HasIntersection(&BarrierPtr->Rect, &Hitbox)) {
+        if (BarrierPtr->Type == OBJ_BARRIER_TYPE_PLATFORM) {
+            // For platforms, we need to check for collision with only the top of the platform.
+            SDL_Rect PlatformTopRect = {
+                BarrierPtr->Rect.x, BarrierPtr->Rect.y,
+                BarrierPtr->Rect.w, 1 // Make the height of the Platform Rect to 1px.
+            };
+            if (SDL_HasIntersection(&Hitbox, &PlatformTopRect)) {
+                return BarrierPtr->Type;
+            }
+        } else if (SDL_HasIntersection(&BarrierPtr->Rect, &Hitbox)) {
             return BarrierPtr->Type;
         }
     }
@@ -86,36 +95,30 @@ bool player_PlayerCheckFell(player_Player* Player)
 }
 
 
-void player_DoInputs(struct player_Player* Player, bool InputKeys[322])
+void player_DoInputs(player_Player* Player, bool InputKeys[286])
 {
-    Player->vx = 0;
-    bool Up = InputKeys[SDLK_w];
-    bool Left = InputKeys[SDLK_a];
-    bool Down = InputKeys[SDLK_s];
-    bool Right = InputKeys[SDLK_d];
-    bool Space = InputKeys[SDLK_SPACE];
+    Player->vx = 0; // Reset X-axis velocity.
+    bool Up = InputKeys[SDL_SCANCODE_W];
+    bool Left = InputKeys[SDL_SCANCODE_A];
+    bool Down = InputKeys[SDL_SCANCODE_S];
+    bool Right = InputKeys[SDL_SCANCODE_D];
+    bool Space = InputKeys[SDL_SCANCODE_SPACE];
+    // bool LShift = InputKeys[SDL_SCANCODE_LSHIFT]; // Not implemented yet.
     if (Up || Space) {
         bool IsIdle = (Player->State == PLAYER_STATE_IDLE || Player->State == PLAYER_STATE_WALK);
         bool InAir = (Player->vy != 0);
         if (IsIdle && !InAir) {
-            Player->State = PLAYER_STATE_JUMP_START;
+            Player->State = PLAYER_STATE_JUMP;
         }
     }
     if (Down) {
-        if (Player->State == PLAYER_STATE_JUMP_ACCELERATE) {
-            Player->State = PLAYER_STATE_ACCEL_FALL;
-            Player->vy += PLAYER_ACCEL_FALL_STEP;
-        }
+        // Ducking is not implemented yet.
     }
     if (Left) {
-        if (Player->State != PLAYER_STATE_ACCEL_FALL) {
-            Player->vx -= PLAYER_BASE_VX;
-        }
+        Player->vx -= PLAYER_BASE_VX;
     }
     if (Right) {
-        if (Player->State != PLAYER_STATE_ACCEL_FALL) {
-            Player->vx += PLAYER_BASE_VX;
-        }
+        Player->vx += PLAYER_BASE_VX;
     }
 }
 
@@ -129,18 +132,14 @@ void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Enti
         Player->Hitbox.w
     };
 
-    if (Player->State == PLAYER_STATE_JUMP_START) {
-        Player->vy -= PLAYER_JUMP_START_BOOST;
-        Player->State = PLAYER_STATE_JUMP_ACCELERATE;
-    }
-    if (Player->State == PLAYER_STATE_JUMP_ACCELERATE) {
+    if (PLAYER_STATE_JUMP == Player->State) {
+        Player->vy -= PLAYER_JUMP_START_BOOST + PLAYER_JUMP_STEP;
         Player->State = PLAYER_STATE_IDLE;
-        Player->vy -= PLAYER_JUMP_STEP;
     }
 
     Player->vy += CONFIG_GRAVITY_AY; // Oh look here's gravity.
     // Detect Collision for Y axis
-    Player->vy = MIN(Player->vy, CONFIG_MAX_GRAVITY_VY);
+    Player->vy = MIN(Player->vy, PLAYER_MAX_VY); // Clamp velocity to max.
     NewHitbox.y += Player->vy;
     switch (player_PlayerCheckCollision(BarriersHead, NewHitbox)) {
         case PLAYER_WINDOW_COLLISION_ID:
@@ -153,6 +152,13 @@ void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Enti
             Player->Alive = false;
             if (DEBUG_MODE)
                 printf("Y CHECK: Player touched void barrier.\n");
+            break;
+        }
+        case OBJ_BARRIER_TYPE_PLATFORM: {
+            if (Player->vy > 0) {
+                Player->vy = 0;
+                NewHitbox.y = Player->Hitbox.y;
+            }
             break;
         }
     }
@@ -189,7 +195,7 @@ void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Enti
 }
 
 
-void player_UpdatePlayer(player_Player* Player, bool InputKeys[322], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
+void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
 {
     if (Player->Alive) {
         player_DoInputs(Player, InputKeys);

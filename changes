@@ -1,1 +1,17 @@
-Updated TODO file
+Platforms + other minor changes.
+
+New Barrier Type: Platforms!
+    - Platforms are barriers that act the same as Wall barriers, but allow for passing through the bottom
+        - To elaborate, when platform barriers are checked in the player collision checks, it only checks for intersection with a 1px tall rect representing the tippy-top of the platform
+        - Once the player recieves this boolean value, it stops the player if it's falling on to the platform, but allows the player to pass through if it's coming up from below the platform
+        - Note: Entities Update functions have been updated with this new platform functionality, but they haven't been tested, as Entity Y-Movement hasn't been tested yet.
+    - Platforms are rendered with the color white.
+    - Platforms are denoted as "P" barriers in barr files.
+
+Other changes:
+    - Deleted Accelerated falling
+    - Deleted PLAYER_STATE_JUMP_ACCELERATE (merged functionality with PLAYER_JUMP_START [renamed to PLAYER_JUMP])
+    - Changed size of InputKeys[] from 322 to 286
+        - Now it represents Key Scancodes, as opposed to Key syms. This allows for modifier keys
+            - Note: Modifier Keys have not been implemented yet. I plan to create a "shift-down" control, allowing the player to move down a platform
+    - Update TODO, as applicable.

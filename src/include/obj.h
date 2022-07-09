@@ -5,6 +5,7 @@
 
 #define OBJ_BARRIER_TYPE_WALL 0
 #define OBJ_BARRIER_TYPE_VOID 1
+#define OBJ_BARRIER_TYPE_PLATFORM 2
 
 typedef struct obj_Barrier {
     SDL_Rect Rect;

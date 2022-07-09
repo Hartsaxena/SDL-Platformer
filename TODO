@@ -8,7 +8,6 @@ Player Shooting Bullets
 Food Rewards (like the mushrooms in Mario)
 Weather
 Background Back-Layer Scrolling
-Platforms (Barriers, but with more movement permissions)
 Right now, entities can only be put on the screen directly in "ent" file: Make it so that entities can spawn off the screen, appearing only when the player reaches its area.
 Only Update Entities whose domains aren't on the screen.
 Different types of weapons (Don't overdo it)

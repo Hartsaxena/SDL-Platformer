@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include <SDL2\\SDL.h>
 
+#include "debug.h"
 #include "front.h"
 #include "game_config.h"
 #include "obj.h"
@@ -38,10 +40,25 @@ void render_DrawBarrier(SDL_Renderer* Renderer, obj_Barrier* Barrier)
 {
     int WallBarrierColor[3] = {150, 75, 0}; // Placeholder until texture implementation.
     int VoidBarrierColor[3] = {128, 128, 128};
-    if (Barrier->Type == OBJ_BARRIER_TYPE_WALL) {
-        render_DrawRect(Renderer, Barrier->Rect, WallBarrierColor, SDL_ALPHA_OPAQUE);
-    } else if (Barrier->Type == OBJ_BARRIER_TYPE_VOID) {
-        render_DrawRect(Renderer, Barrier->Rect, VoidBarrierColor, SDL_ALPHA_OPAQUE);
+    int PlatformBarrierColor[3] = {255, 255, 255};
+    switch (Barrier->Type) {
+        case OBJ_BARRIER_TYPE_WALL: {
+            render_DrawRect(Renderer, Barrier->Rect, WallBarrierColor, SDL_ALPHA_OPAQUE);
+            break;
+        }
+        case OBJ_BARRIER_TYPE_VOID: {
+            render_DrawRect(Renderer, Barrier->Rect, VoidBarrierColor, SDL_ALPHA_OPAQUE);
+            break;
+        }
+        case OBJ_BARRIER_TYPE_PLATFORM: {
+            render_DrawRect(Renderer, Barrier->Rect, PlatformBarrierColor, SDL_ALPHA_OPAQUE);
+            break;
+        }
+        default: {
+            if (DEBUG_MODE)
+                printf("render_DrawBarrier: Unknown barrier type.\n");
+            front_Quit();
+        }
     }
 }
 

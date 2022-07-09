@@ -32,20 +32,20 @@ int front_Init()
     if (DEBUG_MODE)
         printf("Success!\n");
 
+    if (DEBUG_MODE)
+        printf("Creating Display Window... ");
     front_Window = SDL_CreateWindow(front_WINDOWTITLE,
                                     SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED,
                                     front_SCREENX, front_SCREENY,
                                     SDL_WINDOW_SHOWN);
-    front_Renderer = SDL_CreateRenderer(front_Window, -1, SDL_RENDERER_ACCELERATED);
-
-    if (DEBUG_MODE)
-        printf("Creating Display Window... ");
     if (front_Window == NULL) {
         printf("FATAL ERROR: Window could not be displayed.\n");
         front_Quit();
     }
+    front_Renderer = SDL_CreateRenderer(front_Window, -1, SDL_RENDERER_ACCELERATED);
     if (DEBUG_MODE)
         printf("Success!\n");
+
     return 0;
 }

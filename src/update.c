@@ -133,6 +133,14 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
             EntityPtr->Alive = false;
             break;
         }
+        case OBJ_BARRIER_TYPE_PLATFORM: {
+            // Detect if the entity fell on the platform or came through below it
+            if (EntityPtr->vy > 0) {
+                EntityPtr->vy = 0;
+                NewHitbox.y = EntityPtr->Hitbox.y;
+            }
+            break;
+        }
     }
     // ... X axis
     if (EntityPtr->Direction) {

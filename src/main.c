@@ -19,8 +19,8 @@ int main(int argc, char* argv[])
 
     // Initializing Frontend Variables
     SDL_Event InputEvent;
-    bool InputKeys[322]; // Contains bools for all SDL keys. true = key is pressed, false = key isn't pressed.
-    for(int i = 0; i < 322; i++) { // Init them all to false first
+    bool InputKeys[286]; // Contains bools for all SDL scancodes. true = key is pressed, false = key isn't pressed.
+    for (int i = 0; i < 286; i++) { // Init them all to false first
         InputKeys[i] = false;
     }
     int BGColor[3] = {0, 0, 0};
@@ -52,11 +52,11 @@ int main(int argc, char* argv[])
         while (SDL_PollEvent(&InputEvent) > 0) {
             switch (InputEvent.type) {
                 case SDL_KEYDOWN: {
-                    InputKeys[InputEvent.key.keysym.sym] = true;
+                    InputKeys[InputEvent.key.keysym.scancode] = true;
                     break;
                 }
                 case SDL_KEYUP: {
-                    InputKeys[InputEvent.key.keysym.sym] = false;
+                    InputKeys[InputEvent.key.keysym.scancode] = false;
                     break;
                 }
 

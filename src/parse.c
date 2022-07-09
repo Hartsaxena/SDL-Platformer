@@ -45,6 +45,8 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
             Barrier_Type = OBJ_BARRIER_TYPE_WALL;
         } else if (strcmp(SplitToken, "V") == 0) {
             Barrier_Type = OBJ_BARRIER_TYPE_VOID;
+        } else if (strcmp(SplitToken, "P") == 0) {
+            Barrier_Type = OBJ_BARRIER_TYPE_PLATFORM;
         }
 
         SplitToken = strtok(NULL, Splitter);
