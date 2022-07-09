@@ -1,5 +1,4 @@
 When the program updates an entity, it just checks if the entity is alive and skips the update function if it isn't. This works, but it creates unnecessary memory. We should check if the entity is alive, delete the node if it isn't, then skip. NOTE: It may be advisable to change the update entity function to accept two entity pointers, one for the previous entity in the list and the second one for the current entity. This way we can use the previous entity to delete the current. Then we need to figure out how and when to deallocate the memory (All at once is advisable).
-Create a program "Debug Mode"
 More Comments + Write Purpose of each file
 Player Lives / Respawn Mechanic ***
 Creating Non-Enemy Entities (NPCs?)
