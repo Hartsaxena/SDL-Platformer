@@ -16,22 +16,67 @@ Those functions are generally found in the `render.c` file at the time of this b
 #include "debug.h"
 
 
-bool update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
+int update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
 {
-    for (obj_Barrier* Barrier = BarriersHead; Barrier != NULL; Barrier = Barrier->next) {
-        SDL_Rect BarrierRect = Barrier->Rect;
-        if (SDL_HasIntersection(&Hitbox, &BarrierRect)) {
-            return true;
+    for (obj_Barrier* BarrierPtr = BarriersHead; BarrierPtr != NULL; BarrierPtr = BarrierPtr->next) {
+        SDL_Rect BarrierRect = BarrierPtr->Rect;
+        if (SDL_HasIntersection(&Rect, &BarrierRect)) {
+            return BarrierPtr->Type;
         }
     }
 
-    return false;
+    return -1;
 }
 
 
-bool update_EntityCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
+bool update_ConfineRect(SDL_Rect Rect, SDL_Rect ConfineRect)
 {
-    return update_RectCheckCollision(BarriersHead, Hitbox);
+    bool Confined = false;
+    if (Rect.x < ConfineRect.x) {
+        Rect.x = ConfineRect.x;
+        Confined = true;
+    }
+    if (Rect.y < ConfineRect.y) {
+        Rect.y = ConfineRect.y;
+        Confined = true;
+    }
+    if (Rect.x + Rect.w > ConfineRect.x + ConfineRect.w) {
+        Rect.x = ConfineRect.x + ConfineRect.w - Rect.w;
+        Confined = true;
+    }
+    if (Rect.y + Rect.h > ConfineRect.y + ConfineRect.h) {
+        Rect.y = ConfineRect.y + ConfineRect.h - Rect.h;
+        Confined = true;
+    }
+    return Confined;
+}
+
+
+bool update_ConfineEntity(obj_Entity* EntityPtr)
+{
+    bool Confined = false;
+    if (EntityPtr->Hitbox.x < EntityPtr->Domain_left && EntityPtr->Domain_left != -1) {
+        EntityPtr->Hitbox.x = EntityPtr->Domain_left;
+        Confined = true;
+    } else if (EntityPtr->Hitbox.x + EntityPtr->Hitbox.w > EntityPtr->Domain_right && EntityPtr->Domain_right != -1) {
+        EntityPtr->Hitbox.x = EntityPtr->Domain_right - EntityPtr->Hitbox.w;
+        Confined = true;
+    }
+    if (EntityPtr->Hitbox.y < EntityPtr->Domain_top && EntityPtr->Domain_top != -1) {
+        EntityPtr->Hitbox.y = EntityPtr->Domain_top;
+        Confined = true;
+    } else if (EntityPtr->Hitbox.y + EntityPtr->Hitbox.h > EntityPtr->Domain_bottom && EntityPtr->Domain_bottom != -1) {
+        EntityPtr->Hitbox.y = EntityPtr->Domain_bottom - EntityPtr->Hitbox.h;
+        Confined = true;
+    }
+    return Confined;
+}
+
+
+int update_EntityCheckCollision(obj_Barrier* BarriersHead, SDL_Rect EntityRect)
+{
+    int CollisionType = update_RectCheckCollision(BarriersHead, EntityRect);
+    return CollisionType;
 }
 
 
@@ -68,9 +113,8 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
             break;
         }
         default: {
-            if (DEBUG_MODE) {
+            if (DEBUG_MODE)
                 printf("Entity State %d is not implemented.\n", EntityPtr->State);
-            }
             abort();
         }
     }
@@ -79,18 +123,40 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
     // Detect Collision for Y axis
     EntityPtr->vy = MIN(EntityPtr->vy, CONFIG_MAX_GRAVITY_VY);
     NewHitbox.y += EntityPtr->vy;
-    if (update_EntityCheckCollision(BarriersHead, NewHitbox)) {
-        EntityPtr->vy = 0;
-        NewHitbox.y = EntityPtr->Hitbox.y;
+    switch (update_EntityCheckCollision(BarriersHead, NewHitbox)) {
+        case OBJ_BARRIER_TYPE_WALL: {
+            EntityPtr->vy = 0;
+            NewHitbox.y = EntityPtr->Hitbox.y;
+            break;
+        }
+        case OBJ_BARRIER_TYPE_VOID: {
+            EntityPtr->Alive = false;
+            break;
+        }
     }
     // ... X axis
+    if (EntityPtr->Direction) {
+        EntityPtr->vx = EntityPtr->Speed;
+    } else {
+        EntityPtr->vx = -EntityPtr->Speed;
+    }
     NewHitbox.x += EntityPtr->vx;
-    if (update_EntityCheckCollision(BarriersHead, NewHitbox)) {
-        EntityPtr->vx = 0;
-        NewHitbox.x = EntityPtr->Hitbox.x;
+    switch (update_EntityCheckCollision(BarriersHead, NewHitbox)) {
+        case OBJ_BARRIER_TYPE_WALL: {
+            EntityPtr->vx = 0;
+            NewHitbox.x = EntityPtr->Hitbox.x;
+        }
+        case OBJ_BARRIER_TYPE_VOID: {
+            EntityPtr->Alive = false;
+        }
     }
 
     EntityPtr->Hitbox = NewHitbox;
+    if (update_ConfineEntity(EntityPtr)) {
+        if (DEBUG_MODE)
+            printf("Entity with Rect {%d, %d, %d, %d} was confined to its domain {%d - %d}, {%d - %d}.\n", EntityPtr->Hitbox.x, EntityPtr->Hitbox.y, EntityPtr->Hitbox.w, EntityPtr->Hitbox.h, EntityPtr->Domain_left, EntityPtr->Domain_right, EntityPtr->Domain_top, EntityPtr->Domain_bottom);
+        EntityPtr->Direction = !EntityPtr->Direction;
+    }
 }
 
 

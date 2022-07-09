@@ -24,7 +24,7 @@ void render_DrawRect(SDL_Renderer* Renderer, SDL_Rect Rect, int Color[3], int Al
 void render_RenderPlayer(SDL_Renderer* Renderer, player_Player* Player)
 {
     int PlayerHitboxColor[3] = {255, 255, 255}; // Just for debugging. The player should never see the hitbox.
-    if (Player->render) {
+    if (Player->Render) {
         render_DrawRect(Renderer, Player->Hitbox, PlayerHitboxColor, PLAYER_HITBOX_ALPHA);
     }
 }
@@ -32,8 +32,13 @@ void render_RenderPlayer(SDL_Renderer* Renderer, player_Player* Player)
 
 void render_DrawBarrier(SDL_Renderer* Renderer, obj_Barrier* Barrier)
 {
-    int BarrierColor[3] = {150, 75, 0}; // Placeholder until texture implementation.
-    render_DrawRect(Renderer, Barrier->Rect, BarrierColor, SDL_ALPHA_OPAQUE);
+    int WallBarrierColor[3] = {150, 75, 0}; // Placeholder until texture implementation.
+    int VoidBarrierColor[3] = {128, 128, 128};
+    if (Barrier->Type == OBJ_BARRIER_TYPE_WALL) {
+        render_DrawRect(Renderer, Barrier->Rect, WallBarrierColor, SDL_ALPHA_OPAQUE);
+    } else if (Barrier->Type == OBJ_BARRIER_TYPE_VOID) {
+        render_DrawRect(Renderer, Barrier->Rect, VoidBarrierColor, SDL_ALPHA_OPAQUE);
+    }
 }
 
 
@@ -50,10 +55,12 @@ void render_DrawEntity(SDL_Renderer* Renderer, obj_Entity* Entity)
     int EnemyEntityColor[3] = {255, 0, 0}; // Again, placeholders.
     int FriendlyEntityColor[3] = {0, 255, 0};
 
-    if (Entity->IsEnemy) {
-        render_DrawRect(Renderer, Entity->Hitbox, EnemyEntityColor, SDL_ALPHA_OPAQUE);
-    } else {
-        render_DrawRect(Renderer, Entity->Hitbox, FriendlyEntityColor, SDL_ALPHA_OPAQUE);
+    if (Entity->Alive) {
+        if (Entity->IsEnemy) {
+            render_DrawRect(Renderer, Entity->Hitbox, EnemyEntityColor, SDL_ALPHA_OPAQUE);
+        } else {
+            render_DrawRect(Renderer, Entity->Hitbox, FriendlyEntityColor, SDL_ALPHA_OPAQUE);
+        }
     }
 }
 
