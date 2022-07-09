@@ -41,7 +41,6 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
             abort();
         }
         SplitToken = strtok(BarrierString, Splitter);
-        printf("%s\n", SplitToken);
         if (strcmp(SplitToken, "B") == 0) {
             Barrier_Type = OBJ_BARRIER_TYPE_WALL;
         } else if (strcmp(SplitToken, "V") == 0) {
@@ -49,7 +48,6 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
         }
 
         SplitToken = strtok(NULL, Splitter);
-        printf("%s\n", SplitToken);
         Barrier_x = atoi(SplitToken);
         
         SplitToken = strtok(NULL, Splitter);
@@ -65,7 +63,6 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
 
         BarrierDataCurr->Rect = Barrier_Rect;
         BarrierDataCurr->Type = Barrier_Type;
-        printf("Initialized %d Barrier: %d, %d, %d, %d\n", Barrier_Type, Barrier_x, Barrier_y, Barrier_h, Barrier_w);
     
         // Linked List Iteration
         if (FirstIter) {
