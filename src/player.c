@@ -49,20 +49,7 @@ player_Player player_Init()
 bool player_PlayerCheckWindowCollision(SDL_Rect Hitbox)
 {
     // Only disallow hitbox to traverse pass the left and right edges of the window: If the player falls, that's a different story.
-    if (Hitbox.x < 0) {
-        return true;
-    }
-    if (Hitbox.x + Hitbox.w > front_SCREENX) {
-        return true;
-    }
-
-    return false;
-}
-
-
-bool player_PlayerCheckFell(player_Player* Player)
-{
-    return (Player->Hitbox.y + Player->Hitbox.h > front_SCREENY);
+    return (Hitbox.x < 0);
 }
 
 
@@ -93,7 +80,13 @@ bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect H
 }
 
 
-void player_DoInputs(player_Player* Player, bool InputKeys[322])
+bool player_PlayerCheckFell(player_Player* Player)
+{
+    return (Player->Hitbox.y + Player->Hitbox.h > front_SCREENY);
+}
+
+
+void player_DoInputs(struct player_Player* Player, bool InputKeys[322])
 {
     Player->vx = 0;
     bool Up = InputKeys[SDLK_w];

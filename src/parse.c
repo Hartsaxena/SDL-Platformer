@@ -203,13 +203,13 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
 }
 
 
-parse_ParseResult parse_ParseMapFolder(char* FolderPath)
+obj_Map* parse_ParseMapFolder(char* FolderPath)
 {
-    parse_ParseResult ParseResult;
-    ParseResult.BarriersParseResult = malloc(sizeof(obj_Barrier));
-    ParseResult.EntitiesParseResult = malloc(sizeof(obj_Entity));
-    if (ParseResult.BarriersParseResult == NULL ||
-        ParseResult.EntitiesParseResult == NULL) {
+    obj_Map* ParseMap = malloc(sizeof(obj_Map));
+    ParseMap->BarriersHead = malloc(sizeof(obj_Barrier));
+    ParseMap->EntitiesHead = malloc(sizeof(obj_Entity));
+    if (ParseMap->BarriersHead == NULL ||
+        ParseMap->EntitiesHead == NULL) {
         if (DEBUG_MODE) {
             printf("Error: Could not allocate memory for the Parse Result.\n");
         }
@@ -224,15 +224,15 @@ parse_ParseResult parse_ParseMapFolder(char* FolderPath)
 
     if (DEBUG_MODE)
         printf("\tParsing %s as barr file... ", BarriersFilePath);
-    ParseResult.BarriersParseResult = parse_ParseBarrFile(BarriersFilePath);
+    ParseMap->BarriersHead = parse_ParseBarrFile(BarriersFilePath);
     if (DEBUG_MODE)
         printf("Success!\n");
 
     if (DEBUG_MODE)
         printf("\tParsing %s as ent file... ", EntitiesFilePath);
-    ParseResult.EntitiesParseResult = parse_ParseEntFile(EntitiesFilePath);
+    ParseMap->EntitiesHead = parse_ParseEntFile(EntitiesFilePath);
     if (DEBUG_MODE)
         printf("Success!\n");
 
-    return ParseResult;
+    return ParseMap;
 }

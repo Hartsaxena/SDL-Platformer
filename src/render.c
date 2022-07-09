@@ -1,10 +1,13 @@
 #include <SDL2\\SDL.h>
 
+#include "front.h"
 #include "game_config.h"
 #include "obj.h"
 #include "parse.h"
 #include "player.h"
 
+
+static int Camera_x = 0, Camera_y = 0;
 
 void render_FillScreenColor(SDL_Renderer* Renderer, int Color[3], int Alpha)
 {
@@ -15,9 +18,10 @@ void render_FillScreenColor(SDL_Renderer* Renderer, int Color[3], int Alpha)
 
 void render_DrawRect(SDL_Renderer* Renderer, SDL_Rect Rect, int Color[3], int Alpha)
 {
-    SDL_RenderDrawRect(Renderer, &Rect);
+    SDL_Rect OffsetRect = {Rect.x + Camera_x, Rect.y + Camera_y, Rect.w, Rect.h};
+    SDL_RenderDrawRect(Renderer, &OffsetRect);
     SDL_SetRenderDrawColor(Renderer, Color[0], Color[1], Color[2], Alpha);
-    SDL_RenderFillRect(Renderer, &Rect);
+    SDL_RenderFillRect(Renderer, &OffsetRect);
 }
 
 
@@ -70,4 +74,11 @@ void render_RenderEntities(SDL_Renderer* Renderer, obj_Entity* Entities)
     for (obj_Entity* EntityPtr = Entities; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
         render_DrawEntity(Renderer, EntityPtr);
     }
+}
+
+
+void render_UpdateCamera(player_Player* Player)
+{
+    Camera_x = (front_SCREENX / 2) - Player->Hitbox.x;
+    Camera_y = 0; // Not horizontal scrolling
 }
