@@ -37,9 +37,9 @@ struct player_Player player_Init()
         .Hitbox = NewPlayerRect,
         .vx = 0, .vy = 0,
         .ax = 0, .ay = 0,
-        .state = PLAYER_STATE_IDLE,
-        .alive = true,
-        .render = true,
+        .State = PLAYER_STATE_IDLE,
+        .Alive = true,
+        .Render = true,
     };
 
     return NewPlayer;
@@ -66,26 +66,26 @@ bool player_PlayerCheckFell(player_Player* Player)
 }
 
 
-bool player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
+int player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
 {
     if (player_PlayerCheckWindowCollision(Hitbox)) {
-        return true;
+        return PLAYER_WINDOW_COLLISION_ID;
     }
 
     for (obj_Barrier* BarrierPtr = BarriersHead; BarrierPtr != NULL; BarrierPtr = BarrierPtr->next) {
         if (SDL_HasIntersection(&BarrierPtr->Rect, &Hitbox)) {
-            return true;
+            return BarrierPtr->Type;
         }
     }
 
-    return false;
+    return -1;
 }
 
 
 bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect Hitbox)
 {
     for (obj_Entity* EntityPtr = EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
-        if (EntityPtr->IsEnemy && SDL_HasIntersection(&EntityPtr->Hitbox, &Hitbox)) {
+        if (EntityPtr->IsEnemy && EntityPtr->Alive && SDL_HasIntersection(&EntityPtr->Hitbox, &Hitbox)) {
             return true;
         }
     }
@@ -102,25 +102,25 @@ void player_DoInputs(struct player_Player* Player, bool InputKeys[322])
     bool Right = InputKeys[SDLK_d];
     bool Space = InputKeys[SDLK_SPACE];
     if (Up || Space) {
-        bool IsIdle = (Player->state == PLAYER_STATE_IDLE || Player->state == PLAYER_STATE_WALK);
+        bool IsIdle = (Player->State == PLAYER_STATE_IDLE || Player->State == PLAYER_STATE_WALK);
         bool InAir = (Player->vy != 0);
         if (IsIdle && !InAir) {
-            Player->state = PLAYER_STATE_JUMP_START;
+            Player->State = PLAYER_STATE_JUMP_START;
         }
     }
     if (Down) {
-        if (Player->state == PLAYER_STATE_JUMP_ACCELERATE) {
-            Player->state = PLAYER_STATE_ACCEL_FALL;
+        if (Player->State == PLAYER_STATE_JUMP_ACCELERATE) {
+            Player->State = PLAYER_STATE_ACCEL_FALL;
             Player->vy += PLAYER_ACCEL_FALL_STEP;
         }
     }
     if (Left) {
-        if (Player->state != PLAYER_STATE_ACCEL_FALL) {
+        if (Player->State != PLAYER_STATE_ACCEL_FALL) {
             Player->vx -= PLAYER_BASE_VX;
         }
     }
     if (Right) {
-        if (Player->state != PLAYER_STATE_ACCEL_FALL) {
+        if (Player->State != PLAYER_STATE_ACCEL_FALL) {
             Player->vx += PLAYER_BASE_VX;
         }
     }
@@ -136,12 +136,12 @@ void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, o
         Player->Hitbox.w
     };
 
-    if (Player->state == PLAYER_STATE_JUMP_START) {
+    if (Player->State == PLAYER_STATE_JUMP_START) {
         Player->vy -= PLAYER_JUMP_START_BOOST;
-        Player->state = PLAYER_STATE_JUMP_ACCELERATE;
+        Player->State = PLAYER_STATE_JUMP_ACCELERATE;
     }
-    if (Player->state == PLAYER_STATE_JUMP_ACCELERATE) {
-        Player->state = PLAYER_STATE_IDLE;
+    if (Player->State == PLAYER_STATE_JUMP_ACCELERATE) {
+        Player->State = PLAYER_STATE_IDLE;
         Player->vy -= PLAYER_JUMP_STEP;
     }
 
@@ -149,15 +149,36 @@ void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, o
     // Detect Collision for Y axis
     Player->vy = MIN(Player->vy, CONFIG_MAX_GRAVITY_VY);
     NewHitbox.y += Player->vy;
-    if (player_PlayerCheckCollision(BarriersHead, NewHitbox)) {
-        Player->vy = 0;
-        NewHitbox.y = Player->Hitbox.y;
+    switch (player_PlayerCheckCollision(BarriersHead, NewHitbox)) {
+        case PLAYER_WINDOW_COLLISION_ID:
+        case OBJ_BARRIER_TYPE_WALL: {
+            Player->vy = 0;
+            NewHitbox.y = Player->Hitbox.y;
+            break;
+        }
+        case OBJ_BARRIER_TYPE_VOID: {
+            Player->Alive = false;
+            if (DEBUG_MODE)
+                printf("Y CHECK: Player touched void barrier.\n");
+            break;
+        }
     }
+
     // ... X axis
     NewHitbox.x += Player->vx;
-    if (player_PlayerCheckCollision(BarriersHead, NewHitbox)) {
-        Player->vx = 0;
-        NewHitbox.x = Player->Hitbox.x;
+    switch (player_PlayerCheckCollision(BarriersHead, NewHitbox)) {
+        case PLAYER_WINDOW_COLLISION_ID:
+        case OBJ_BARRIER_TYPE_WALL: {
+            Player->vx = 0;
+            NewHitbox.x = Player->Hitbox.x;
+            break;
+        }
+        case OBJ_BARRIER_TYPE_VOID: {
+            Player->Alive = false;
+            if (DEBUG_MODE)
+                printf("X CHECK: Player touched void barrier.\n");
+            break;
+        }
     }
 
     Player->Hitbox = NewHitbox;
@@ -165,9 +186,9 @@ void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, o
     if (player_PlayerCheckFell(Player)) {
         if (DEBUG_MODE)
             printf("Player fell!\n");
-        Player->alive = false;
+        Player->Alive = false;
     } else if (player_PlayerCheckEnemyEntityCollision(EntitiesHead, Player->Hitbox)) { // Check if the player has touched another enemy entity
-        Player->alive = false;
+        Player->Alive = false;
         if (DEBUG_MODE) {
             printf("Player has touched an enemy entity.\n");
         }
@@ -177,7 +198,7 @@ void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, o
 
 void player_UpdatePlayer(struct player_Player* Player, bool InputKeys[322], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
 {
-    if (Player->alive) {
+    if (Player->Alive) {
         player_DoInputs(Player, InputKeys);
         player_DoPhysics(Player, Barriers, EntitiesHead);
     } else {

@@ -6,6 +6,8 @@
 #include "obj.h"
 #include "front.h"
 
+#define PLAYER_WINDOW_COLLISION_ID -2
+
 #define PLAYER_SPAWN_X (front_SCREENX / 2)
 #define PLAYER_SPAWN_Y (front_SCREENY / 2)
 #define PLAYER_HEIGHT  40
@@ -32,9 +34,9 @@ typedef struct player_Player {
     SDL_Rect Hitbox;
     int vx, vy;
     int ax, ay;
-    int state; // See above definitions
-    bool alive;
-    bool render;
+    int State; // See above definitions
+    bool Alive;
+    bool Render;
 } player_Player;
 
 
@@ -42,7 +44,7 @@ struct player_Player player_Init();
 void render_RenderPlayer(SDL_Renderer* Renderer, struct player_Player* Player);
 bool player_PlayerCheckWindowCollision(SDL_Rect Hitbox);
 bool player_PlayerCheckFell(player_Player* Player);
-bool player_PlayerCheckCollision(struct obj_Barrier* Barriers, SDL_Rect Hitbox);
+int player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox);
 bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect Hitbox);
 void player_DoInputs(struct player_Player* Player, bool InputKeys[322]);
 void player_DoPhysics(struct player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);

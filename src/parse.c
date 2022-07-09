@@ -26,7 +26,8 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
 
     // Declaring Temporary Variables
     int Barrier_x, Barrier_y, Barrier_h, Barrier_w;
-    SDL_Rect NewBarrierRect;
+    SDL_Rect Barrier_Rect;
+    int Barrier_Type;
     char BarrierString[64]; // Temporary String: Represents a single line of characters in the Map File
     int BarrierStringMaxSize = 64;
 
@@ -39,22 +40,32 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
             }
             abort();
         }
-
         SplitToken = strtok(BarrierString, Splitter);
+        printf("%s\n", SplitToken);
+        if (strcmp(SplitToken, "B") == 0) {
+            Barrier_Type = OBJ_BARRIER_TYPE_WALL;
+        } else if (strcmp(SplitToken, "V") == 0) {
+            Barrier_Type = OBJ_BARRIER_TYPE_VOID;
+        }
+
+        SplitToken = strtok(NULL, Splitter);
+        printf("%s\n", SplitToken);
         Barrier_x = atoi(SplitToken);
         
         SplitToken = strtok(NULL, Splitter);
         Barrier_y = atoi(SplitToken);
         
         SplitToken = strtok(NULL, Splitter);
-        Barrier_h = atoi(SplitToken);
+        Barrier_w = atoi(SplitToken);
         
         SplitToken = strtok(NULL, Splitter);
-        Barrier_w = atoi(SplitToken);
+        Barrier_h = atoi(SplitToken);
 
-        NewBarrierRect = (SDL_Rect) {Barrier_x, Barrier_y, Barrier_h, Barrier_w};
+        Barrier_Rect = (SDL_Rect) {Barrier_x, Barrier_y, Barrier_w, Barrier_h};
 
-        BarrierDataCurr->Rect = NewBarrierRect;
+        BarrierDataCurr->Rect = Barrier_Rect;
+        BarrierDataCurr->Type = Barrier_Type;
+        printf("Initialized %d Barrier: %d, %d, %d, %d\n", Barrier_Type, Barrier_x, Barrier_y, Barrier_h, Barrier_w);
     
         // Linked List Iteration
         if (FirstIter) {
@@ -86,6 +97,8 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
     bool EntityIsEnemy;
     int Entity_x, Entity_y, Entity_h, Entity_w;
     SDL_Rect NewEntityRect;
+    int Entity_Domain_left, Entity_Domain_right, Entity_Domain_top, Entity_Domain_bottom;
+    bool EntityDirection;
     char EntityString[64];
     int EntityStringMaxSize = 64;
 
@@ -109,17 +122,73 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
         Entity_y = atoi(SplitToken);
 
         SplitToken = strtok(NULL, Splitter);
+        Entity_w = atoi(SplitToken);
+
+        SplitToken = strtok(NULL, Splitter);
         Entity_h = atoi(SplitToken);
 
         SplitToken = strtok(NULL, Splitter);
-        Entity_w = atoi(SplitToken);
+        if (strcmp(SplitToken, "SPEED") == 0) {
+            SplitToken = strtok(NULL, Splitter);
+            EntityDataCurr->Speed = atoi(SplitToken);
+        } else if (strcmp(SplitToken, "NSPEED") == 0) {
+            EntityDataCurr->Speed = 0;
+        }
 
-        NewEntityRect = (SDL_Rect) {Entity_x, Entity_y, Entity_h, Entity_w};
+        SplitToken = strtok(NULL, Splitter);
+        if (strcmp(SplitToken, "NDOMAIN") == 0) {
+            Entity_Domain_left = -1;
+            Entity_Domain_right = -1;
+            Entity_Domain_top = -1;
+            Entity_Domain_bottom = -1;
+        } else {
+            if (strcmp(SplitToken, "XDOMAIN") == 0) {
+                SplitToken = strtok(NULL, Splitter);
+                Entity_Domain_left = atoi(SplitToken);
+
+                SplitToken = strtok(NULL, Splitter);
+                Entity_Domain_right = atoi(SplitToken);
+            } else if (strcmp(SplitToken, "NXDOMAIN") == 0) {
+                Entity_Domain_left = -1;
+                Entity_Domain_right = -1;
+            }
+
+            SplitToken = strtok(NULL, Splitter);
+            if (strcmp(SplitToken, "YDOMAIN") == 0) {
+                SplitToken = strtok(NULL, Splitter);
+                Entity_Domain_top = atoi(SplitToken);
+
+                SplitToken = strtok(NULL, Splitter);
+                Entity_Domain_bottom = atoi(SplitToken);
+            } else if (strcmp(SplitToken, "NYDOMAIN") == 0) {
+                Entity_Domain_top = -1;
+                Entity_Domain_bottom = -1;
+            }
+        }
+
+        SplitToken = strtok(NULL, Splitter);
+        if (strcmp(SplitToken, "DIR") == 0) {
+            SplitToken = strtok(NULL, Splitter);
+            if (strcmp(SplitToken, "1") == 0) {
+                EntityDirection = true;
+            } else {
+                EntityDirection = false;
+            }
+        } else if (strcmp(SplitToken, "NDIR") == 0) {
+            EntityDirection = true;
+        }
+
+        NewEntityRect = (SDL_Rect) {Entity_x, Entity_y, Entity_w, Entity_h};
 
         EntityDataCurr->Hitbox = NewEntityRect;
+        EntityDataCurr->Domain_left = Entity_Domain_left;
+        EntityDataCurr->Domain_right = Entity_Domain_right;
+        EntityDataCurr->Domain_top = Entity_Domain_top;
+        EntityDataCurr->Domain_bottom = Entity_Domain_bottom;
         EntityDataCurr->vx = 0, EntityDataCurr->vy = 0;
         EntityDataCurr->ax = 0, EntityDataCurr->ay = 0;
         EntityDataCurr->State = ENTITY_STATE_IDLE; // Entities don't move for now.
+        EntityDataCurr->Direction = EntityDirection;
         EntityDataCurr->IsEnemy = EntityIsEnemy;
         EntityDataCurr->Alive = true;
 
