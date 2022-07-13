@@ -18,6 +18,9 @@ Those functions are generally found in the `render.c` file at the time of this b
 
 int update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
 {
+    /*
+    This function checks if a given rectangle collides with any barriers in the game.
+    */
     for (obj_Barrier* BarrierPtr = BarriersHead; BarrierPtr != NULL; BarrierPtr = BarrierPtr->next) {
         SDL_Rect BarrierRect = BarrierPtr->Rect;
         if (SDL_HasIntersection(&Rect, &BarrierRect)) {
@@ -31,6 +34,9 @@ int update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
 
 bool update_ConfineRect(SDL_Rect Rect, SDL_Rect ConfineRect)
 {
+    /*
+    This function confines a rectangle inside a given rectangle.
+    */
     bool Confined = false;
     if (Rect.x < ConfineRect.x) {
         Rect.x = ConfineRect.x;
@@ -54,6 +60,9 @@ bool update_ConfineRect(SDL_Rect Rect, SDL_Rect ConfineRect)
 
 bool update_ConfineEntity(obj_Entity* EntityPtr)
 {
+    /*
+    This function confines an entity inside their own domain.
+    */
     bool Confined = false;
     if (EntityPtr->Hitbox.x < EntityPtr->Domain_left && EntityPtr->Domain_left != -1) {
         EntityPtr->Hitbox.x = EntityPtr->Domain_left;
@@ -75,29 +84,28 @@ bool update_ConfineEntity(obj_Entity* EntityPtr)
 
 int update_EntityCheckCollision(obj_Barrier* BarriersHead, SDL_Rect EntityRect)
 {
+    /*
+    This function checks if a given Entity collides with any barriers in the game.
+    */
     int CollisionType = update_RectCheckCollision(BarriersHead, EntityRect);
     return CollisionType;
 }
 
 
-void update_UpdateBarrier(obj_Barrier* BarrierPtr)
-{
-    return; // Do Nothing for now. Maybe change when implementing Screen-Scrolling.
-}
-
-
 void update_UpdateBarriers(obj_Barrier* BarriersHead)
 {
-    for (obj_Barrier* BarrierPtr = BarriersHead; BarrierPtr != NULL; BarrierPtr = BarrierPtr->next) {
-        update_UpdateBarrier(BarrierPtr);
-    }
+    return; // Do nothing. This function is only here to make the code structure more consistent.
 }
 
 
 void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
 {
+    /*
+    This function runs every frame and update the position of an entity. It also checks if the entity collides with any barriers.
+    Note that it does not check whether it has collided with a player. Player-Entity collision are handled in player_UpdatePlayer().
+    */
     if (!EntityPtr->Alive) {
-        return; // Just a placeholder for now.
+        return;
     }
 
     SDL_Rect NewHitbox = {
@@ -124,13 +132,13 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
     EntityPtr->vy = MIN(EntityPtr->vy, CONFIG_MAX_GRAVITY_VY);
     NewHitbox.y += EntityPtr->vy;
     switch (update_EntityCheckCollision(BarriersHead, NewHitbox)) {
+        case OBJ_BARRIER_TYPE_VOID: { // The fact that the OBJ_BARRIER_TYPE_VOID case is first is important.
+            EntityPtr->Alive = false;
+            break;
+        }
         case OBJ_BARRIER_TYPE_WALL: {
             EntityPtr->vy = 0;
             NewHitbox.y = EntityPtr->Hitbox.y;
-            break;
-        }
-        case OBJ_BARRIER_TYPE_VOID: {
-            EntityPtr->Alive = false;
             break;
         }
         case OBJ_BARRIER_TYPE_PLATFORM: {
@@ -150,12 +158,14 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
     }
     NewHitbox.x += EntityPtr->vx;
     switch (update_EntityCheckCollision(BarriersHead, NewHitbox)) {
+        case OBJ_BARRIER_TYPE_VOID: {
+            EntityPtr->Alive = false;
+            break;
+        }
         case OBJ_BARRIER_TYPE_WALL: {
             EntityPtr->vx = 0;
             NewHitbox.x = EntityPtr->Hitbox.x;
-        }
-        case OBJ_BARRIER_TYPE_VOID: {
-            EntityPtr->Alive = false;
+            break;
         }
     }
 
@@ -168,9 +178,28 @@ void update_UpdateEntity(obj_Entity* EntityPtr, obj_Barrier* BarriersHead)
 }
 
 
-void update_UpdateEntities(obj_Entity* EntitiesHead, obj_Barrier* BarriersHead)
+void update_UpdateEntities(obj_Entity** EntitiesHead, obj_Barrier* BarriersHead)
 {
-    for (obj_Entity* EntityPtr = EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
+    /*
+    This function updates all entities in a given Linked List of obj_Entity's.
+    The function deletes entites it finds that are not alive. This runs after updating each entity.
+    Note that EntitiesHead is a double pointer. This is because the function may need to delete the first element / head of the list.
+    The function returns immediately if there are no entities in the list.
+    */
+    if (*EntitiesHead == NULL)
+        return;
+    obj_Entity* PreviousEntityPtr = NULL;
+    obj_Entity* EntityPtr;
+    for (EntityPtr = *EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
         update_UpdateEntity(EntityPtr, BarriersHead);
+        if (!EntityPtr->Alive) {
+            if (DEBUG_MODE)
+                printf("Found and Deleted Entity with Rect {%d, %d, %d, %d}.\n", EntityPtr->Hitbox.x, EntityPtr->Hitbox.y, EntityPtr->Hitbox.w, EntityPtr->Hitbox.h);
+            if (PreviousEntityPtr == NULL)
+                *EntitiesHead = EntityPtr->next;
+            else
+                PreviousEntityPtr->next = EntityPtr->next;
+        }
+        PreviousEntityPtr = EntityPtr;
     }
 }

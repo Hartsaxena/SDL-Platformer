@@ -1,3 +1,12 @@
+/*
+This is where map folders are parsed and translated into in-game levels.
+Admittedly, this is probably the most badly-written code in the game, but it's okay because it only runs once per game (at the time of writing this).
+Format for a map folder:
+    In the folder, there must be a barr file. This file specifies the barriers that are in the level.
+        This includes void spaces, walls, platforms, and other barriers. The floor does not need to be specified (it is assumed to be a void space).
+    In the folder, there must be a ent file. This file specifies the entities that are in the level.
+        This includes enemies, items (not implemented), and other entities.
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -7,10 +16,14 @@
 #include "update.h"
 #include "parse.h"
 #include "debug.h"
+#include "front.h"
 
 
 obj_Barrier* parse_ParseBarrFile(char* FilePath)
 {
+    /*
+    This function parses a barr file and returns a linked list of barriers (obj_Barrier).
+    */
     // Accessing the Map File
     FILE* MapFile;
     MapFile = fopen(FilePath, "r");
@@ -83,6 +96,9 @@ obj_Barrier* parse_ParseBarrFile(char* FilePath)
 
 obj_Entity* parse_ParseEntFile(char* FilePath)
 {
+    /*
+    Parses the Ent file and returns a linked list of entities (obj_Entity).
+    */
     FILE* EntFile;
     EntFile = fopen(FilePath, "r");
 
@@ -99,10 +115,12 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
     int Entity_Domain_left, Entity_Domain_right, Entity_Domain_top, Entity_Domain_bottom;
     bool EntityDirection;
     char EntityString[64];
+    int EntityStringCounter = 0; // Number of lines parsed.
     int EntityStringMaxSize = 64;
 
     bool FirstIter = true;
     while (fgets(EntityString, EntityStringMaxSize, EntFile) != NULL) {
+        EntityStringCounter++;
         EntityDataCurr = malloc(sizeof(obj_Entity));
         if (EntityDataCurr == NULL) {
             if (DEBUG_MODE) {
@@ -132,6 +150,10 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
             EntityDataCurr->Speed = atoi(SplitToken);
         } else if (strcmp(SplitToken, "NSPEED") == 0) {
             EntityDataCurr->Speed = 0;
+        } else {
+            if (DEBUG_MODE)
+                printf("ENT FILE ERROR: Line %d: Invalid Speed.\n", EntityStringCounter);
+            front_Quit();
         }
 
         SplitToken = strtok(NULL, Splitter);
@@ -150,6 +172,10 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
             } else if (strcmp(SplitToken, "NXDOMAIN") == 0) {
                 Entity_Domain_left = -1;
                 Entity_Domain_right = -1;
+            } else {
+                if (DEBUG_MODE)
+                    printf("ENT FILE ERROR: Line %d: Invalid/Unspecified X Domain.\n", EntityStringCounter);
+                front_Quit();
             }
 
             SplitToken = strtok(NULL, Splitter);
@@ -162,6 +188,10 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
             } else if (strcmp(SplitToken, "NYDOMAIN") == 0) {
                 Entity_Domain_top = -1;
                 Entity_Domain_bottom = -1;
+            } else {
+                if (DEBUG_MODE)
+                    printf("ENT FILE ERROR: Line %d: Invalid/Unspecified Y Domain.\n", EntityStringCounter);
+                front_Quit();
             }
         }
 
@@ -175,6 +205,9 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
             }
         } else if (strcmp(SplitToken, "NDIR") == 0) {
             EntityDirection = true;
+        } else {
+            if (DEBUG_MODE)
+                printf("ENT FILE ERROR: Line %d: Invalid/Unspecified Direction.\n", EntityStringCounter);
         }
 
         NewEntityRect = (SDL_Rect) {Entity_x, Entity_y, Entity_w, Entity_h};
@@ -186,7 +219,7 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
         EntityDataCurr->Domain_bottom = Entity_Domain_bottom;
         EntityDataCurr->vx = 0, EntityDataCurr->vy = 0;
         EntityDataCurr->ax = 0, EntityDataCurr->ay = 0;
-        EntityDataCurr->State = ENTITY_STATE_IDLE; // Entities don't move for now.
+        EntityDataCurr->State = ENTITY_STATE_IDLE;
         EntityDataCurr->Direction = EntityDirection;
         EntityDataCurr->IsEnemy = EntityIsEnemy;
         EntityDataCurr->Alive = true;
@@ -200,6 +233,7 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
         }
     }
     EntityDataTemp->next = NULL;
+    // free(EntityDataCurr);
     
     return EntityDataHead;
 }
@@ -207,6 +241,9 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
 
 obj_Map* parse_ParseMapFolder(char* FolderPath)
 {
+    /*
+    This function parses the whole map folder. It returns a obj_Map structure (see definition).
+    */
     obj_Map* ParseMap = malloc(sizeof(obj_Map));
     ParseMap->BarriersHead = malloc(sizeof(obj_Barrier));
     ParseMap->EntitiesHead = malloc(sizeof(obj_Entity));

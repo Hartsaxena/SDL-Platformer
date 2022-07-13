@@ -1,4 +1,8 @@
+/*
+This file contains methods that manage the SDL2 library, which is used as the frontend of the game. This includes window creation, rendering, and event handling.
+*/
 #include <stdio.h>
+#include <stdbool.h>
 #include <SDL2\\SDL.h>
 
 #include "front.h"
@@ -12,6 +16,9 @@ SDL_Rect front_WinRect = {0, 0, front_SCREENX, front_SCREENY};
 
 void front_Quit()
 {
+    /*
+    This function quits the SDL2 library and the program as a whole.
+    */
     if (front_Window != NULL) {
         SDL_DestroyWindow(front_Window);
         SDL_DestroyRenderer(front_Renderer);
@@ -23,11 +30,14 @@ void front_Quit()
 
 int front_Init()
 {
+    /*
+    This function initializes the SDL2 library. It creates a window and renderer, and returns 0 if successful, or -1 if not.
+    */
     if (DEBUG_MODE)
         printf("Initializing SDL... ");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { // Initialize SDL
         printf("FATAL ERROR: %s\n", SDL_GetError());
-        front_Quit();
+        return -1;
     }
     if (DEBUG_MODE)
         printf("Success!\n");
@@ -41,11 +51,41 @@ int front_Init()
                                     SDL_WINDOW_SHOWN);
     if (front_Window == NULL) {
         printf("FATAL ERROR: Window could not be displayed.\n");
-        front_Quit();
+        return -1;
     }
     front_Renderer = SDL_CreateRenderer(front_Window, -1, SDL_RENDERER_ACCELERATED);
     if (DEBUG_MODE)
         printf("Success!\n");
 
     return 0;
+}
+
+
+bool front_HandleInputs(SDL_Event* InputEvent, bool InputKeys[286])
+{
+    /*
+    This function handles all input events. It returns true if the game should continue running, false if it should quit.
+    */
+    bool IsRunning = true;
+    while (SDL_PollEvent(InputEvent) > 0) {
+        switch (InputEvent->type) {
+            case SDL_KEYDOWN: {
+                InputKeys[InputEvent->key.keysym.scancode] = true;
+                break;
+            }
+            case SDL_KEYUP: {
+                InputKeys[InputEvent->key.keysym.scancode] = false;
+                break;
+            }
+
+            case SDL_QUIT: {
+                IsRunning = false;
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+    return IsRunning;
 }

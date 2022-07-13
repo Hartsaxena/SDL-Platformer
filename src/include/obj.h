@@ -1,8 +1,18 @@
+/*
+Normally, I don't like writing documentation for header files, but I'm going to do it here because it's a very special file.
+This file contains macros and structures that are used to identify objects in the game (Platforms, Barriers, Entities, etc.)
+
+Note that the player obj is not in this file. It is in player.h.
+This is because the player is a special object, and should be separated from other objects (in my opinion).
+
+Most object structs are formatted as a Singly-Linked List. This is because the game needs to be able to handle an unspecified number of objects.
+*/
 #ifndef OBJ_H
 #define OBJ_H
 
 #include <stdbool.h>
 
+// Different variants of objects.
 #define OBJ_BARRIER_TYPE_WALL 0
 #define OBJ_BARRIER_TYPE_VOID 1
 #define OBJ_BARRIER_TYPE_PLATFORM 2
@@ -28,6 +38,8 @@ typedef struct obj_Entity {
 } obj_Entity;
 
 typedef struct obj_Map {
+    // Not an individual object, but an entire map of objects. This is mainly used in parse.c (at the moment).
+    // Contains pointers to heads of singly-linked lists of objects.
     obj_Barrier* BarriersHead;
     obj_Entity* EntitiesHead;
 } obj_Map;

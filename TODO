@@ -12,3 +12,4 @@ Right now, entities can only be put on the screen directly in "ent" file: Make i
 Only Update Entities whose domains aren't on the screen.
 Different types of weapons (Don't overdo it)
 How to obtain said types of weapons
+Crash the game when parsing a map file (barr, ent, etc.) encounters an incorrect format.

@@ -4,25 +4,25 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "cls;cd src;make run",
+            "command": "cd src;make run",
             "args": []
         },
         {
             "label": "make-build",
             "type": "shell",
-            "command": "cls;cd src;make",
+            "command": "cd src;make",
             "args": []
         },
         {
             "label": "make-run",
             "type": "shell",
-            "command": "cls;cd src;make run",
+            "command": "cd src;make run",
             "args": []
         },
         {
             "label": "make-clean",
             "type": "shell",
-            "command": "cls;cd src;make clean",
+            "command": "cd src;make clean",
             "args": []
         }
     ]

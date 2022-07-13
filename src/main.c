@@ -1,3 +1,8 @@
+/*
+Driver file of the code. This is where everything is put together into an actual game.
+*/
+
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL2\\SDL.h>
@@ -15,7 +20,10 @@
 int main(int argc, char* argv[])
 {
     printf("Loading...\n");
-    front_Init(); // Initializing Frontend (windows and stuff)
+    if (front_Init() != 0) {
+        printf("Failed to initialize frontend.\n");
+        front_Quit();
+    }
 
     // Initializing Frontend Variables
     SDL_Event InputEvent;
@@ -49,31 +57,12 @@ int main(int argc, char* argv[])
     while (IsRunning) {
 
         // Handle Input Events
-        while (SDL_PollEvent(&InputEvent) > 0) {
-            switch (InputEvent.type) {
-                case SDL_KEYDOWN: {
-                    InputKeys[InputEvent.key.keysym.scancode] = true;
-                    break;
-                }
-                case SDL_KEYUP: {
-                    InputKeys[InputEvent.key.keysym.scancode] = false;
-                    break;
-                }
-
-                case SDL_QUIT: {
-                    IsRunning = false;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
-
+        IsRunning = front_HandleInputs(&InputEvent, InputKeys);
 
         // Update code here
         update_UpdateBarriers(Map->BarriersHead);
         player_UpdatePlayer(&Player, InputKeys, Map->BarriersHead, Map->EntitiesHead);
-        update_UpdateEntities(Map->EntitiesHead, Map->BarriersHead);
+        update_UpdateEntities(&Map->EntitiesHead, Map->BarriersHead);
 
         // Rendering Code Here
         // Offset the camera to the player's position.

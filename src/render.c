@@ -1,3 +1,6 @@
+/*
+This file contains methods that render all objects in the game. Calculations for updating positions of objects, and the like, are done in the update.c file. Game updates and rendering should be done separately.
+*/
 #include <stdio.h>
 #include <SDL2\\SDL.h>
 

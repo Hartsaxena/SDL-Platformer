@@ -29,6 +29,9 @@ Basically, everything related to the Player (Exceptions listed above) is written
 
 player_Player player_Init()
 {
+    /*
+    This function creates a new player_Player object, and returns it. This is called when the game starts and when the player respawns (at the time of writing this. I plan to add a respawn function later).
+    */
     SDL_Rect NewPlayerRect = {
         PLAYER_SPAWN_X, PLAYER_SPAWN_Y,
         PLAYER_HEIGHT, PLAYER_WIDTH
@@ -49,12 +52,16 @@ player_Player player_Init()
 bool player_PlayerCheckWindowCollision(SDL_Rect Hitbox)
 {
     // Only disallow hitbox to traverse pass the left and right edges of the window: If the player falls, that's a different story.
-    return (Hitbox.x < 0);
+    // return (Hitbox.x < 0);
+    return false;
 }
 
 
 int player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
 {
+    /*
+    This function checks if the player's hitbox collides with any of the barriers in the map.
+    */
     if (player_PlayerCheckWindowCollision(Hitbox)) {
         return PLAYER_WINDOW_COLLISION_ID;
     }
@@ -80,6 +87,9 @@ int player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox)
 
 bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect Hitbox)
 {
+    /*
+    This function checks if the player's hitbox collides with any of the enemies.
+    */
     for (obj_Entity* EntityPtr = EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
         if (EntityPtr->IsEnemy && EntityPtr->Alive && SDL_HasIntersection(&EntityPtr->Hitbox, &Hitbox)) {
             return true;
@@ -91,12 +101,19 @@ bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect H
 
 bool player_PlayerCheckFell(player_Player* Player)
 {
-    return (Player->Hitbox.y + Player->Hitbox.h > front_SCREENY);
+    /*
+    Checks if the player has fallen below the map.
+    Note that this function doesn't check if the player has touched the bottom of the map, but rather if the player has fallen below the entire map. This is intentional.
+    */
+    return (Player->Hitbox.y > front_SCREENY);
 }
 
 
 void player_DoInputs(player_Player* Player, bool InputKeys[286])
 {
+    /*
+    This function handles the player's inputs. InputKeys is an array of booleans, where each index corresponds to a key on the keyboard.
+    */
     Player->vx = 0; // Reset X-axis velocity.
     bool Up = InputKeys[SDL_SCANCODE_W];
     bool Left = InputKeys[SDL_SCANCODE_A];
@@ -125,6 +142,10 @@ void player_DoInputs(player_Player* Player, bool InputKeys[286])
 
 void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
 {
+    /*
+    This function renders the player's physics interactions (collision, gravity, etc.).
+    Player state changes are also handled here (for example, if the function detects that the player has fallen, it will set the player's Alive flag to false).
+    */
     SDL_Rect NewHitbox = {
         Player->Hitbox.x,
         Player->Hitbox.y,

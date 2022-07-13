@@ -1,6 +1,7 @@
 #ifndef FRONT_CONFIG_H
 #define FRONT_CONFIG_H
 
+#include <stdbool.h>
 #include <SDL2\\SDL.h>
 
 #define front_SCREENX 1000
@@ -16,6 +17,7 @@ extern SDL_Rect front_WinRect;
 
 void front_Quit();
 int front_Init();
+bool front_HandleInputs(SDL_Event* InputEvent, bool InputKeys[286]);
 
 
 #endif
