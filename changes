@@ -1,9 +1,4 @@
-Minor Commit:
-  - Added a bunch of documentation for certain files and functions.
-  - Changed player fall-check to allow player to completely fall through the bottom of the screen before killing them off.
-  - Changed player window collision - now allows the player to go anywhere basically.
-    - The reasoning behind this is that the player is normally centered on the screen, so there's no way it can go off the map.
-    - Right now, player_PlayerCheckWindowCollision() just always returns false. We can even think about completely removing it as a whole.
-      - Left old code there, but commented out.
-
-Sorry I haven't been able to put as much work these past couple days. I'm at some summer camp right now, but I'll be able to work some more after Friday!
+Added Bullets:
+    - Added the first version of game bullets
+    - No collision or physics except for basic x-axis movement
+    - No Delay between frames where bullets are made.

@@ -40,9 +40,11 @@ player_Player player_Init()
         .Hitbox = NewPlayerRect,
         .vx = 0, .vy = 0,
         .ax = 0, .ay = 0,
+        .Direction = true,
         .State = PLAYER_STATE_IDLE,
         .Alive = true,
         .Render = true,
+        .BulletsHead = NULL,
     };
 
     return NewPlayer;
@@ -109,6 +111,32 @@ bool player_PlayerCheckFell(player_Player* Player)
 }
 
 
+void player_CreateNewBullet(player_Player* Player)
+{
+    /*
+    This function creates a new player bullet and adds it to the player's list of bullets to update.
+    */
+    player_Bullet* NewBullet = malloc(sizeof(player_Bullet));
+    if (NewBullet == NULL) {
+        printf("Error: Could not allocate memory for bullet.\n");
+        front_Quit();
+    }
+
+    NewBullet->Hitbox = (SDL_Rect) {
+        .x = Player->Hitbox.x,
+        .y = Player->Hitbox.y,
+        .w = PLAYER_BULLET_LENGTH,
+        .h = PLAYER_BULLET_LENGTH,
+    };
+    NewBullet->Speed = 14; // the speed member should be changed in the bullet update function, but isn't yet.
+    NewBullet->Direction = Player->Direction;
+    NewBullet->Active = true;
+
+    NewBullet->next = Player->BulletsHead;
+    Player->BulletsHead = NewBullet;
+}
+
+
 void player_DoInputs(player_Player* Player, bool InputKeys[286])
 {
     /*
@@ -120,6 +148,7 @@ void player_DoInputs(player_Player* Player, bool InputKeys[286])
     bool Down = InputKeys[SDL_SCANCODE_S];
     bool Right = InputKeys[SDL_SCANCODE_D];
     bool Space = InputKeys[SDL_SCANCODE_SPACE];
+    bool K = InputKeys[SDL_SCANCODE_K];
     // bool LShift = InputKeys[SDL_SCANCODE_LSHIFT]; // Not implemented yet.
     if (Up || Space) {
         bool IsIdle = (Player->State == PLAYER_STATE_IDLE || Player->State == PLAYER_STATE_WALK);
@@ -133,9 +162,14 @@ void player_DoInputs(player_Player* Player, bool InputKeys[286])
     }
     if (Left) {
         Player->vx -= PLAYER_BASE_VX;
+        Player->Direction = false;
     }
     if (Right) {
         Player->vx += PLAYER_BASE_VX;
+        Player->Direction = true;
+    }
+    if (K) {
+        player_CreateNewBullet(Player);
     }
 }
 
@@ -216,18 +250,30 @@ void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Enti
 }
 
 
+void player_UpdateBullets(player_Player* Player)
+{
+    for (player_Bullet* BulletPtr = Player->BulletsHead; BulletPtr != NULL; BulletPtr = BulletPtr->next) {
+        if (BulletPtr->Direction) {
+            BulletPtr->Hitbox.x += BulletPtr->Speed;
+        } else {
+            BulletPtr->Hitbox.x -= BulletPtr->Speed;
+        }
+    }
+}
+
+
 void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
 {
-    if (Player->Alive) {
-        player_DoInputs(Player, InputKeys);
-        player_DoPhysics(Player, Barriers, EntitiesHead);
-    } else {
+    if (!Player->Alive) {
         // Player->render = false;
 
         // For now, just instantly respawn the player when they die
         *Player = player_Init();
-        if (DEBUG_MODE) {
-            printf("Created new Player instance.\n");
-        }
+        if (DEBUG_MODE)
+            printf("Player respawned.\n");
     }
+
+    player_DoInputs(Player, InputKeys);
+    player_DoPhysics(Player, Barriers, EntitiesHead);
+    player_UpdateBullets(Player);
 }

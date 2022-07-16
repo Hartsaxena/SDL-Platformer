@@ -36,6 +36,12 @@ void render_RenderPlayer(SDL_Renderer* Renderer, player_Player* Player)
     if (Player->Render) {
         render_DrawRect(Renderer, Player->Hitbox, PlayerHitboxColor, PLAYER_HITBOX_ALPHA);
     }
+
+    for (player_Bullet* BulletPtr = Player->BulletsHead; BulletPtr != NULL; BulletPtr = BulletPtr->next) {
+        if (BulletPtr->Active) {
+            render_DrawRect(Renderer, BulletPtr->Hitbox, PlayerHitboxColor, PLAYER_HITBOX_ALPHA);
+        }
+    }
 }
 
 
