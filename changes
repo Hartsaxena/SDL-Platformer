@@ -1,4 +1,11 @@
-Added Bullets:
-    - Added the first version of game bullets
-    - No collision or physics except for basic x-axis movement
-    - No Delay between frames where bullets are made.
+Bullet Update:
+    - Added Player Direction member to assist in bullet creation
+    - Changed Bullet speed from 10 to 12.
+    - Added Player delay between bullet shots
+        - The player can only shoot new bullets every once in x amount of frames (currently 15)
+    - Added linked list removal of bullets
+    - Added Entity Collision and updates
+        - Now bullets kill entities when they collide and kills itself as well.
+    - Added Barrier Collision and updates
+        - Bullets deactivate themselves when they touch any barrier.
+    - Updated TODO

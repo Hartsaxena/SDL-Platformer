@@ -13,9 +13,11 @@ Most object structs are formatted as a Singly-Linked List. This is because the g
 #include <stdbool.h>
 
 // Different variants of objects.
+#define OBJ_NONE -1
 #define OBJ_BARRIER_TYPE_WALL 0
 #define OBJ_BARRIER_TYPE_VOID 1
 #define OBJ_BARRIER_TYPE_PLATFORM 2
+#define OBJ_ENTITY_TYPE_BASE 100
 
 typedef struct obj_Barrier {
     SDL_Rect Rect;
@@ -30,6 +32,7 @@ typedef struct obj_Entity {
     int vx, vy;
     int ax, ay;
     int Speed;
+    int Type;
     int State;
     bool Direction;
     bool IsEnemy;

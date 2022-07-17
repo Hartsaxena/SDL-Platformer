@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 
     // Initializing Game Variables
     if (DEBUG_MODE) {
+        printf("Debug Mode Enabled.\n");
         printf("Initializing Game Variables...\n");
     }
     if (DEBUG_MODE)

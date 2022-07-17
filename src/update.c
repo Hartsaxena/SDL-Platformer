@@ -16,7 +16,7 @@ Those functions are generally found in the `render.c` file at the time of this b
 #include "debug.h"
 
 
-int update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
+int update_RectCheckBarrierCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
 {
     /*
     This function checks if a given rectangle collides with any barriers in the game.
@@ -28,7 +28,23 @@ int update_RectCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
         }
     }
 
-    return -1;
+    return OBJ_NONE;
+}
+
+
+int update_RectCheckEntityCollision(obj_Entity* EntitiesHead, SDL_Rect Rect)
+{
+    /*
+    This function checks if a given rectangle collides with any entities in the game.
+    */
+    for (obj_Entity* EntityPtr = EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
+        SDL_Rect EntityRect = EntityPtr->Hitbox;
+        if (SDL_HasIntersection(&Rect, &EntityRect)) {
+            return EntityPtr->Type;
+        }
+    }
+
+    return OBJ_NONE;
 }
 
 
@@ -87,7 +103,7 @@ int update_EntityCheckCollision(obj_Barrier* BarriersHead, SDL_Rect EntityRect)
     /*
     This function checks if a given Entity collides with any barriers in the game.
     */
-    int CollisionType = update_RectCheckCollision(BarriersHead, EntityRect);
+    int CollisionType = update_RectCheckBarrierCollision(BarriersHead, EntityRect);
     return CollisionType;
 }
 
@@ -188,18 +204,18 @@ void update_UpdateEntities(obj_Entity** EntitiesHead, obj_Barrier* BarriersHead)
     */
     if (*EntitiesHead == NULL)
         return;
-    obj_Entity* PreviousEntityPtr = NULL;
+    obj_Entity* PrevEntityPtr = NULL;
     obj_Entity* EntityPtr;
     for (EntityPtr = *EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
         update_UpdateEntity(EntityPtr, BarriersHead);
         if (!EntityPtr->Alive) {
             if (DEBUG_MODE)
                 printf("Found and Deleted Entity with Rect {%d, %d, %d, %d}.\n", EntityPtr->Hitbox.x, EntityPtr->Hitbox.y, EntityPtr->Hitbox.w, EntityPtr->Hitbox.h);
-            if (PreviousEntityPtr == NULL)
+            if (PrevEntityPtr == NULL)
                 *EntitiesHead = EntityPtr->next;
             else
-                PreviousEntityPtr->next = EntityPtr->next;
+                PrevEntityPtr->next = EntityPtr->next;
         }
-        PreviousEntityPtr = EntityPtr;
+        PrevEntityPtr = EntityPtr;
     }
 }

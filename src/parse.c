@@ -219,6 +219,7 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
         EntityDataCurr->Domain_bottom = Entity_Domain_bottom;
         EntityDataCurr->vx = 0, EntityDataCurr->vy = 0;
         EntityDataCurr->ax = 0, EntityDataCurr->ay = 0;
+        EntityDataCurr->Type = OBJ_ENTITY_TYPE_BASE; // Different types of entities aren't implemented yet.
         EntityDataCurr->State = ENTITY_STATE_IDLE;
         EntityDataCurr->Direction = EntityDirection;
         EntityDataCurr->IsEnemy = EntityIsEnemy;

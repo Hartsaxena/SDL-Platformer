@@ -45,6 +45,7 @@ player_Player player_Init()
         .Alive = true,
         .Render = true,
         .BulletsHead = NULL,
+        .BulletDelay = PLAYER_BULLET_DELAY
     };
 
     return NewPlayer;
@@ -168,8 +169,11 @@ void player_DoInputs(player_Player* Player, bool InputKeys[286])
         Player->vx += PLAYER_BASE_VX;
         Player->Direction = true;
     }
-    if (K) {
+    if (K && Player->BulletDelay <= 0) {
         player_CreateNewBullet(Player);
+        Player->BulletDelay = PLAYER_BULLET_DELAY;
+    } else {
+        Player->BulletDelay--;
     }
 }
 
@@ -250,19 +254,72 @@ void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Enti
 }
 
 
-void player_UpdateBullets(player_Player* Player)
+int player_BulletCheckCollision(player_Bullet* Bullet, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
 {
-    for (player_Bullet* BulletPtr = Player->BulletsHead; BulletPtr != NULL; BulletPtr = BulletPtr->next) {
+    /*
+    This function checks if the bullet has collided with any of the barriers or entities.
+    */
+
+    // Check if the bullet has collided with any of the barriers.
+    int CollidedBarrierID = update_RectCheckBarrierCollision(BarriersHead, Bullet->Hitbox);
+    if (CollidedBarrierID != OBJ_NONE) {
+        if (DEBUG_MODE)
+            printf("Bullet collided with Barrier Type: %d.\n", CollidedBarrierID);
+        return CollidedBarrierID;
+    }
+
+    // Check if the bullet has collided with any of the entities.
+    for (obj_Entity* Entity = EntitiesHead; Entity != NULL; Entity = Entity->next) {
+        if (SDL_HasIntersection(&Bullet->Hitbox, &Entity->Hitbox)) {
+            if (DEBUG_MODE)
+                printf("Player Bullet has collided with entity and has been deactivated.\n");
+            Entity->Alive = false;
+            Bullet->Active = false;
+            return Entity->Type;
+        }
+    }
+
+    return OBJ_NONE;
+}
+
+
+void player_UpdateBullets(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
+{
+    /*
+    This function updates all the player's bullets.
+    if a bullet has collided with a barrier or an entity, it will be deactivated and removed from the Player's bullet list.
+    */
+   player_Bullet* PrevBulletPtr = NULL;
+   player_Bullet* BulletPtr;
+    for (BulletPtr = Player->BulletsHead; BulletPtr != NULL; BulletPtr = BulletPtr->next) {
         if (BulletPtr->Direction) {
             BulletPtr->Hitbox.x += BulletPtr->Speed;
         } else {
             BulletPtr->Hitbox.x -= BulletPtr->Speed;
         }
+
+        switch (player_BulletCheckCollision(BulletPtr, BarriersHead, EntitiesHead)) {
+            // Note: only barrier collisions are handled in this switch statement. The entity collisions are handled in the player_BulletCheckCollision function.
+            // Although all types of barriers do the same thing in this switch statement at the time of writing this, it is possible that in the future, different barriers will have different effects.
+            case OBJ_BARRIER_TYPE_WALL:
+            case OBJ_BARRIER_TYPE_VOID:
+            case OBJ_BARRIER_TYPE_PLATFORM: {
+                BulletPtr->Active = false;
+                break;
+            }
+        }
+        if (!BulletPtr->Active) {
+            if (PrevBulletPtr == NULL)
+                Player->BulletsHead = BulletPtr->next;
+            else
+                PrevBulletPtr->next = BulletPtr->next;
+        }
+        PrevBulletPtr = BulletPtr;
     }
 }
 
 
-void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* Barriers, obj_Entity* EntitiesHead)
+void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
 {
     if (!Player->Alive) {
         // Player->render = false;
@@ -273,7 +330,8 @@ void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier
             printf("Player respawned.\n");
     }
 
+    // Update functions. Note that the order of these functions is important.
     player_DoInputs(Player, InputKeys);
-    player_DoPhysics(Player, Barriers, EntitiesHead);
-    player_UpdateBullets(Player);
+    player_DoPhysics(Player, BarriersHead, EntitiesHead);
+    player_UpdateBullets(Player, BarriersHead, EntitiesHead);
 }
