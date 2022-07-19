@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 
-#include "obj.h"
 #include "front.h"
+#include "obj.h"
+#include "weather.h"
 
 #define PLAYER_WINDOW_COLLISION_ID -2
 
@@ -26,8 +27,8 @@
 #define PLAYER_JUMP_STEP 14
 #define PLAYER_ACCEL_FALL_STEP 30
 
-#define PLAYER_BULLET_SPEED 12
-#define PLAYER_BULLET_LENGTH 10 // Side length of bullet.
+#define PLAYER_BULLET_BASE_SPEED 20.0
+#define PLAYER_BULLET_LENGTH 15 // Side length of bullet.
 #define PLAYER_BULLET_DELAY 15 // Number of frames between bullets being allowed to be fired.
 
 #define PLAYER_HITBOX_ALPHA 255 // Should be 0 when distributed (nobody needs to see the hitbox)
@@ -35,7 +36,7 @@
 
 typedef struct player_Bullet {
     SDL_Rect Hitbox;
-    int Speed;
+    double vx, vy;
     bool Direction;
     bool Active;
     struct player_Bullet* next;
@@ -54,16 +55,16 @@ typedef struct player_Player {
 } player_Player;
 
 player_Player player_Init();
+void player_CreateNewBullet(player_Player* Player);
+int player_BulletCheckCollision(player_Bullet* Bullet, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);
+void player_UpdateBullets(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, weather_Weather* CurrentWeather);
 bool player_PlayerCheckWindowCollision(SDL_Rect Hitbox);
 bool player_PlayerCheckFell(player_Player* Player);
 int player_PlayerCheckCollision(obj_Barrier* BarriersHead, SDL_Rect Hitbox);
 bool player_PlayerCheckEnemyEntityCollision(obj_Entity* EntitiesHead, SDL_Rect Hitbox);
 void player_DoInputs(player_Player* Player, bool InputKeys[286]);
 void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);
-void player_CreateNewBullet(player_Player* Player);
-int player_BulletCheckCollision(player_Bullet* Bullet, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);
-void player_UpdateBullets(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead);
-void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* Barriers, obj_Entity* EntitiesHead);
+void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, weather_Weather* CurrentWeather);
 
 
 #endif

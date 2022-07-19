@@ -15,6 +15,7 @@ Driver file of the code. This is where everything is put together into an actual
 #include "player.h"
 #include "render.h"
 #include "update.h"
+#include "weather.h"
 
 
 int main(int argc, char* argv[])
@@ -62,8 +63,9 @@ int main(int argc, char* argv[])
 
         // Update code here
         update_UpdateBarriers(Map->BarriersHead);
-        player_UpdatePlayer(&Player, InputKeys, Map->BarriersHead, Map->EntitiesHead);
+        player_UpdatePlayer(&Player, InputKeys, Map->BarriersHead, Map->EntitiesHead, Map->WeatherInstance);
         update_UpdateEntities(&Map->EntitiesHead, Map->BarriersHead);
+        update_UpdateWeather(Map->WeatherInstance);
 
         // Rendering Code Here
         // Offset the camera to the player's position.

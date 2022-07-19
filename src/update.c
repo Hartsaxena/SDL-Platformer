@@ -8,12 +8,17 @@ Those functions are generally found in the `render.c` file at the time of this b
 #include <SDL2\\SDL.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "calc.h"
+#include "obj.h"
 #include "game_config.h"
 #include "parse.h"
+#include "front.h"
 #include "update.h"
 #include "debug.h"
+#include "weather.h"
 
 
 int update_RectCheckBarrierCollision(obj_Barrier* BarriersHead, SDL_Rect Rect)
@@ -217,5 +222,37 @@ void update_UpdateEntities(obj_Entity** EntitiesHead, obj_Barrier* BarriersHead)
                 PrevEntityPtr->next = EntityPtr->next;
         }
         PrevEntityPtr = EntityPtr;
+    }
+}
+
+
+void update_UpdateWeather(weather_Weather* WeatherInstance)
+{
+    /*
+    This function updates the weather in a given weather_Weather instance.
+    */
+    WeatherInstance->Time -= 1;
+    if (WeatherInstance->Time <= 0) {
+        if (WeatherInstance->next == NULL) { // Create random weather after there are no more set weather instances to follow.
+            srand(time(0));
+            double NewDirection = (rand() % 360);
+            double NewStrength = (float) rand() / (float) (RAND_MAX / CONFIG_WEATHER_STRENGTH_MAX) + CONFIG_WEATHER_STRENGTH_MIN;
+            int NewTime = ((rand() % CONFIG_WEATHER_TIME_MAX) + CONFIG_WEATHER_TIME_MIN) * front_FPS;
+
+            WeatherInstance->Direction = NewDirection;
+            WeatherInstance->Strength = NewStrength;
+            WeatherInstance->Time = NewTime;
+            if (DEBUG_MODE)
+                printf("No more weather instances found in list. Created new weather with Direction: %f, Strength: %f, and Duration: %d Frames (%d Seconds)\n", NewDirection, NewStrength, NewTime, NewTime / front_FPS);
+        } else {
+            // Copy the next weather instance to this one.
+            if (DEBUG_MODE)
+                printf("Current weather instance ran out of time. Copying next weather instance.\n");
+            weather_Weather* NewWeatherInstance = WeatherInstance->next;
+            WeatherInstance->Time = NewWeatherInstance->Time;
+            WeatherInstance->Direction = NewWeatherInstance->Direction;
+            WeatherInstance->Strength = NewWeatherInstance->Strength;
+            WeatherInstance->next = NewWeatherInstance->next;
+        }
     }
 }

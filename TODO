@@ -5,7 +5,6 @@ Creating Non-Enemy Entities (NPCs?)
 Create and Add Textures
 Create and Add Animations
 Food Rewards (like the mushrooms in Mario)
-Weather
 Background Back-Layer Scrolling
 Only Update Entities whose domains aren't on the screen.
 Different types of weapons (Don't overdo it)

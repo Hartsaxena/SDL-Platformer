@@ -2,7 +2,7 @@ CC=gcc
 STD=-std=c17
 STD_OPT=-g -Wall
 MAIN=main.c
-INC_SRC=game_config.c front.c player.c parse.c calc.c render.c update.c
+INC_SRC=game_config.c front.c player.c parse.c calc.c render.c update.c weather.c
 INC_DIR=-Iinclude
 OUTPUT_DIR=bin
 OUTPUT_EXEC=$(OUTPUT_DIR)\\main

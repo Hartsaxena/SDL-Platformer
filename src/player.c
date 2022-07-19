@@ -19,12 +19,13 @@ Basically, everything related to the Player (Exceptions listed above) is written
 #include <SDL2\\SDL.h>
 
 #include "calc.h"
+#include "debug.h"
 #include "front.h"
 #include "game_config.h"
 #include "parse.h"
 #include "player.h"
 #include "update.h"
-#include "debug.h"
+#include "weather.h"
 
 
 player_Player player_Init()
@@ -49,6 +50,97 @@ player_Player player_Init()
     };
 
     return NewPlayer;
+}
+
+
+void player_CreateNewBullet(player_Player* Player)
+{
+    /*
+    This function creates a new player bullet and adds it to the player's list of bullets to update.
+    */
+    player_Bullet* NewBullet = malloc(sizeof(player_Bullet));
+    if (NewBullet == NULL) {
+        printf("Error: Could not allocate memory for bullet.\n");
+        front_Quit();
+    }
+
+    NewBullet->Hitbox = (SDL_Rect) {
+        .x = Player->Hitbox.x + (Player->Hitbox.w / 2),
+        .y = Player->Hitbox.y + (Player->Hitbox.h / 2),
+        .w = PLAYER_BULLET_LENGTH,
+        .h = PLAYER_BULLET_LENGTH,
+    };
+    if (Player->Direction) {
+        NewBullet->vx = PLAYER_BULLET_BASE_SPEED;
+    } else {
+        NewBullet->vx = -PLAYER_BULLET_BASE_SPEED;
+    }
+    NewBullet->vy = 0.0; 
+    NewBullet->Direction = Player->Direction;
+    NewBullet->Active = true;
+
+    NewBullet->next = Player->BulletsHead;
+    Player->BulletsHead = NewBullet;
+}
+
+
+int player_BulletCheckCollision(player_Bullet* Bullet, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
+{
+    /*
+    This function checks if the bullet has collided with any of the barriers or entities.
+    */
+
+    // Check if the bullet has collided with any of the barriers.
+    int CollidedBarrierID = update_RectCheckBarrierCollision(BarriersHead, Bullet->Hitbox);
+    if (CollidedBarrierID != OBJ_NONE) {
+        return CollidedBarrierID;
+    }
+
+    // Check if the bullet has collided with any of the entities.
+    for (obj_Entity* Entity = EntitiesHead; Entity != NULL; Entity = Entity->next) {
+        if (SDL_HasIntersection(&Bullet->Hitbox, &Entity->Hitbox)) {
+            Entity->Alive = false;
+            Bullet->Active = false;
+            return Entity->Type;
+        }
+    }
+
+    return OBJ_NONE;
+}
+
+
+void player_UpdateBullets(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, weather_Weather* CurrentWeather)
+{
+    /*
+    This function updates all the player's bullets.
+    if a bullet has collided with a barrier or an entity, it will be deactivated and removed from the Player's bullet list.
+    */
+   player_Bullet* PrevBulletPtr = NULL;
+   player_Bullet* BulletPtr;
+    for (BulletPtr = Player->BulletsHead; BulletPtr != NULL; BulletPtr = BulletPtr->next) {
+        weather_WeatherSpeedUpdate(&BulletPtr->vx, &BulletPtr->vy, CurrentWeather);
+
+        BulletPtr->Hitbox.x += BulletPtr->vx;
+        BulletPtr->Hitbox.y += BulletPtr->vy;
+
+        switch (player_BulletCheckCollision(BulletPtr, BarriersHead, EntitiesHead)) {
+            // Note: only barrier collisions are handled in this switch statement. The entity collisions are handled in the player_BulletCheckCollision function.
+            // Although all types of barriers do the same thing in this switch statement at the time of writing this, it is possible that in the future, different barriers will have different effects.
+            case OBJ_BARRIER_TYPE_WALL:
+            case OBJ_BARRIER_TYPE_VOID:
+            case OBJ_BARRIER_TYPE_PLATFORM: {
+                BulletPtr->Active = false;
+                break;
+            }
+        }
+        if (!BulletPtr->Active) {
+            if (PrevBulletPtr == NULL)
+                Player->BulletsHead = BulletPtr->next;
+            else
+                PrevBulletPtr->next = BulletPtr->next;
+        }
+        PrevBulletPtr = BulletPtr;
+    }
 }
 
 
@@ -109,32 +201,6 @@ bool player_PlayerCheckFell(player_Player* Player)
     Note that this function doesn't check if the player has touched the bottom of the map, but rather if the player has fallen below the entire map. This is intentional.
     */
     return (Player->Hitbox.y > front_SCREENY);
-}
-
-
-void player_CreateNewBullet(player_Player* Player)
-{
-    /*
-    This function creates a new player bullet and adds it to the player's list of bullets to update.
-    */
-    player_Bullet* NewBullet = malloc(sizeof(player_Bullet));
-    if (NewBullet == NULL) {
-        printf("Error: Could not allocate memory for bullet.\n");
-        front_Quit();
-    }
-
-    NewBullet->Hitbox = (SDL_Rect) {
-        .x = Player->Hitbox.x,
-        .y = Player->Hitbox.y,
-        .w = PLAYER_BULLET_LENGTH,
-        .h = PLAYER_BULLET_LENGTH,
-    };
-    NewBullet->Speed = 14; // the speed member should be changed in the bullet update function, but isn't yet.
-    NewBullet->Direction = Player->Direction;
-    NewBullet->Active = true;
-
-    NewBullet->next = Player->BulletsHead;
-    Player->BulletsHead = NewBullet;
 }
 
 
@@ -254,72 +320,7 @@ void player_DoPhysics(player_Player* Player, obj_Barrier* BarriersHead, obj_Enti
 }
 
 
-int player_BulletCheckCollision(player_Bullet* Bullet, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
-{
-    /*
-    This function checks if the bullet has collided with any of the barriers or entities.
-    */
-
-    // Check if the bullet has collided with any of the barriers.
-    int CollidedBarrierID = update_RectCheckBarrierCollision(BarriersHead, Bullet->Hitbox);
-    if (CollidedBarrierID != OBJ_NONE) {
-        if (DEBUG_MODE)
-            printf("Bullet collided with Barrier Type: %d.\n", CollidedBarrierID);
-        return CollidedBarrierID;
-    }
-
-    // Check if the bullet has collided with any of the entities.
-    for (obj_Entity* Entity = EntitiesHead; Entity != NULL; Entity = Entity->next) {
-        if (SDL_HasIntersection(&Bullet->Hitbox, &Entity->Hitbox)) {
-            if (DEBUG_MODE)
-                printf("Player Bullet has collided with entity and has been deactivated.\n");
-            Entity->Alive = false;
-            Bullet->Active = false;
-            return Entity->Type;
-        }
-    }
-
-    return OBJ_NONE;
-}
-
-
-void player_UpdateBullets(player_Player* Player, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
-{
-    /*
-    This function updates all the player's bullets.
-    if a bullet has collided with a barrier or an entity, it will be deactivated and removed from the Player's bullet list.
-    */
-   player_Bullet* PrevBulletPtr = NULL;
-   player_Bullet* BulletPtr;
-    for (BulletPtr = Player->BulletsHead; BulletPtr != NULL; BulletPtr = BulletPtr->next) {
-        if (BulletPtr->Direction) {
-            BulletPtr->Hitbox.x += BulletPtr->Speed;
-        } else {
-            BulletPtr->Hitbox.x -= BulletPtr->Speed;
-        }
-
-        switch (player_BulletCheckCollision(BulletPtr, BarriersHead, EntitiesHead)) {
-            // Note: only barrier collisions are handled in this switch statement. The entity collisions are handled in the player_BulletCheckCollision function.
-            // Although all types of barriers do the same thing in this switch statement at the time of writing this, it is possible that in the future, different barriers will have different effects.
-            case OBJ_BARRIER_TYPE_WALL:
-            case OBJ_BARRIER_TYPE_VOID:
-            case OBJ_BARRIER_TYPE_PLATFORM: {
-                BulletPtr->Active = false;
-                break;
-            }
-        }
-        if (!BulletPtr->Active) {
-            if (PrevBulletPtr == NULL)
-                Player->BulletsHead = BulletPtr->next;
-            else
-                PrevBulletPtr->next = BulletPtr->next;
-        }
-        PrevBulletPtr = BulletPtr;
-    }
-}
-
-
-void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* BarriersHead, obj_Entity* EntitiesHead)
+void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, weather_Weather* CurrentWeather)
 {
     if (!Player->Alive) {
         // Player->render = false;
@@ -333,5 +334,5 @@ void player_UpdatePlayer(player_Player* Player, bool InputKeys[286], obj_Barrier
     // Update functions. Note that the order of these functions is important.
     player_DoInputs(Player, InputKeys);
     player_DoPhysics(Player, BarriersHead, EntitiesHead);
-    player_UpdateBullets(Player, BarriersHead, EntitiesHead);
+    player_UpdateBullets(Player, BarriersHead, EntitiesHead, CurrentWeather);
 }
