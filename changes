@@ -1,3 +1,21 @@
-Weather Rendering (Not working):
-    - Added prototype of Weather rendering, although the prototype doesn't work
-    - It's very obvious what to do, but I'm having trouble deciding whether to do it or not.
+Weather Update (literally):
+    - Added basic weather
+        Members (specified in weather.h under structure weather_Weather)
+            - Direction (the angle at which the wind blows in degrees)
+            - Strength (the strength of the wind)
+            - Time (the duration for the weather to take place in number of update frames)
+            - next (pointer to the next weather instance to take place after the current weather's time has run out)
+        - Not rendered, so there's no way of actually knowing where the wind is going.
+        - Only effects movement of bullets
+        - Most definitions located in weather.c and weather.h
+    - Added weather parsing
+        - Weather data is parsed from the wthr file in the map folder.
+    - Added random weather generation
+        - Only happens when there are no more weather instances in the list
+    - Added documentation to added functions (that I know of)
+    - Updated TODO
+
+Other changes:
+    - Added much more in-depth documentation of parse functions
+        - Added line formats for each file parsing function
+        - Added a long tutorial at the beginning of parse.c that explains how to read these confusing looking format specifiers.

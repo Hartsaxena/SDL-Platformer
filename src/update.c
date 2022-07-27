@@ -17,7 +17,6 @@ Those functions are generally found in the `render.c` file at the time of this b
 #include "parse.h"
 #include "front.h"
 #include "update.h"
-#include "render.h"
 #include "debug.h"
 #include "weather.h"
 
@@ -223,31 +222,6 @@ void update_UpdateEntities(obj_Entity** EntitiesHead, obj_Barrier* BarriersHead)
                 PrevEntityPtr->next = EntityPtr->next;
         }
         PrevEntityPtr = EntityPtr;
-    }
-}
-
-
-void update_UpdateWeatherRenderData(render_WeatherRenderData* RenderDataHead)
-{
-    /*
-    This function updates weather rendering data, as defined in render.h.
-    */
-   for (render_WeatherRenderData* RenderDataPtr = RenderDataHead; RenderDataPtr != NULL; RenderDataPtr = RenderDataPtr->next) {
-        RenderDataPtr->Rect.TopLeft[0] += RenderDataPtr->vx;
-        RenderDataPtr->Rect.TopLeft[1] += RenderDataPtr->vy;
-        RenderDataPtr->Rect.TopRight[0] += RenderDataPtr->vx;
-        RenderDataPtr->Rect.TopRight[1] += RenderDataPtr->vy;
-        RenderDataPtr->Rect.BottomLeft[0] += RenderDataPtr->vx;
-        RenderDataPtr->Rect.BottomLeft[1] += RenderDataPtr->vy;
-        RenderDataPtr->Rect.BottomRight[0] += RenderDataPtr->vx;
-        RenderDataPtr->Rect.BottomRight[1] += RenderDataPtr->vy;
-
-        if (RenderDataPtr->Rect.TopLeft[0] < 0 || RenderDataPtr->Rect.TopLeft[0] > front_SCREENX ||
-            RenderDataPtr->Rect.TopLeft[1] < 0 || RenderDataPtr->Rect.TopLeft[1] > front_SCREENY ||
-            RenderDataPtr->Rect.BottomRight[0] < 0 || RenderDataPtr->Rect.BottomRight[0] > front_SCREENX ||
-            RenderDataPtr->Rect.BottomRight[1] < 0 || RenderDataPtr->Rect.BottomRight[1] > front_SCREENY) {
-            RenderDataPtr->Rect = RenderDataPtr->StartRect;
-        }
     }
 }
 

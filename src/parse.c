@@ -79,7 +79,6 @@ Where the rectangle's topleft corner is situated at (100, 100) (Coordinates are 
 #include "debug.h"
 #include "front.h"
 #include "weather.h"
-#include "calc.h"
 
 
 obj_Barrier* parse_ParseBarrFile(char* FilePath)
@@ -320,7 +319,7 @@ weather_Weather* parse_ParseWthrFile(char* FilePath)
     Parses the Wthr file and returns a linked list of weather (weather_Weather).
 
     Weather format:
-    (float)Direction in Degrees:(float)Strength:(int)Duration
+    (float)Direction:(float)Strength:(int)Duration
     */
     FILE* WthrFile;
     WthrFile = fopen(FilePath, "r");
@@ -345,7 +344,7 @@ weather_Weather* parse_ParseWthrFile(char* FilePath)
         WeatherStringCounter++;
         
         SplitToken = strtok(WeatherString, Splitter);
-        WeatherDirection = DEG_TO_RAD(atof(SplitToken));
+        WeatherDirection = atof(SplitToken);
 
         SplitToken = strtok(NULL, Splitter);
         WeatherStrength = atof(SplitToken);

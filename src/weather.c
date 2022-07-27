@@ -8,6 +8,7 @@ Some definitions (e.g. the actual weather struct) are defined in weather.h.
 #include <stdio.h>
 
 #include "weather.h"
+#include "calc.h"
 
 
 weather_Weather* weather_Init(double Direction, double Strength, int Time)
@@ -30,8 +31,8 @@ void weather_WeatherSpeedUpdate(double* vx, double* vy, weather_Weather* Weather
     This function updates x and y velocities of any object that is affected by the weather and changes the speeds in-place.
     Note that this function works with any object that has x and y velocities, but it is only used for bullets (at the time of writing this).
     */
-    double Weather_vx = cos(WeatherInstance->Direction) * WeatherInstance->Strength;
-    double Weather_vy = -sin(WeatherInstance->Direction) * WeatherInstance->Strength;
+    double Weather_vx = cos(DEG_TO_RAD(WeatherInstance->Direction)) * WeatherInstance->Strength;
+    double Weather_vy = -sin(DEG_TO_RAD(WeatherInstance->Direction)) * WeatherInstance->Strength;
 
     *vx += Weather_vx;
     *vy += Weather_vy;

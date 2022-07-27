@@ -76,8 +76,6 @@ int main(int argc, char* argv[])
         render_RenderPlayer(front_Renderer, &Player);
         render_RenderBarriers(front_Renderer, Map->BarriersHead);
         render_RenderEntities(front_Renderer, Map->EntitiesHead);
-        if (RENDER_WEATHER)
-            render_RenderWeather(front_Renderer, Map->WeatherInstance);
 
         SDL_RenderPresent(front_Renderer);
         SDL_Delay(front_FRAMEPAUSEDELAY);
