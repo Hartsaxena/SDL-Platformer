@@ -8,6 +8,12 @@
             "args": []
         },
         {
+            "label": "build_editor",
+            "type": "shell",
+            "command": "cd src;make run_editor",
+            "args": []
+        },
+        {
             "label": "make-build",
             "type": "shell",
             "command": "cd src;make",
