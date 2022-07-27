@@ -14,9 +14,7 @@
 #define PLAYER_HEIGHT  40
 #define PLAYER_WIDTH   40
 #define PLAYER_BASE_VX 10
-#define PLAYER_MAX_VX  10 // Not used, because I'm not using accelerated left/right movement.
 #define PLAYER_MAX_VY  20
-#define PLAYER_MAX_AX  69420 // I haven't found a use for player ax yet, but i'm putting it here just because.
 #define PLAYER_MAX_AY  18
 
 #define PLAYER_STATE_IDLE 0
