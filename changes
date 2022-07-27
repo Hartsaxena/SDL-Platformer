@@ -1,4 +1,7 @@
-Added basic files for level editor:
-    - No code yet, just "Hello World" program
-    - In order to run level editor, use "make run_editor" instead of "make run"
-    - Updated tasks.json for vscode and makefile for running level editor
+Basic level editor features:
+  - Created "level editor mode", which runs if specified in debug.h
+  - Added mouse inputs, handled in front.c just like keyboard inputs.
+  - Basic barrier and entity moving with mouse
+
+Notes:
+  - Discarded changes of previous commit, which ran the level editor as a separate project. Now the level editor runs as an extension of the main game.

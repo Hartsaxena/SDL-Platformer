@@ -3,11 +3,12 @@ Driver file of the code. This is where everything is put together into an actual
 */
 
 
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <SDL2\\SDL.h>
 
 #include "debug.h"
+#include "editor.h"
 #include "front.h"
 #include "game_config.h"
 #include "obj.h"
@@ -32,6 +33,15 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 286; i++) { // Init them all to false first
         InputKeys[i] = false;
     }
+
+    front_MouseState* MouseState; // Contains bools for all SDL mouse scancodes.
+    MouseState = malloc(sizeof(front_MouseState));
+    if (MouseState == NULL) {
+        printf("Failed to allocate memory for Mouse State data.\n");
+        front_Quit();
+    }
+    front_InitMouseState(MouseState);
+
     int BGColor[3] = {0, 0, 0};
     bool IsRunning = true;
 
@@ -39,7 +49,10 @@ int main(int argc, char* argv[])
     // Initializing Game Variables
     if (DEBUG_MODE) {
         printf("Debug Mode Enabled.\n");
-        printf("Initializing Game Variables...\n");
+        if (LEVEL_EDITOR_MODE)
+            printf("Level Editor Mode Enabled.\n");
+
+        printf("\nInitializing Game Variables...\n");
     }
     if (DEBUG_MODE)
         printf("Initializing Player... ");
@@ -59,13 +72,17 @@ int main(int argc, char* argv[])
     while (IsRunning) {
 
         // Handle Input Events
-        IsRunning = front_HandleInputs(&InputEvent, InputKeys);
+        IsRunning = front_HandleInputs(&InputEvent, InputKeys, MouseState);
 
         // Update code here
-        update_UpdateBarriers(Map->BarriersHead);
-        player_UpdatePlayer(&Player, InputKeys, Map->BarriersHead, Map->EntitiesHead, Map->WeatherInstance);
-        update_UpdateEntities(&Map->EntitiesHead, Map->BarriersHead);
-        update_UpdateWeather(Map->WeatherInstance);
+        if (!LEVEL_EDITOR_MODE) {
+            update_UpdateBarriers(Map->BarriersHead);
+            player_UpdatePlayer(&Player, InputKeys, Map->BarriersHead, Map->EntitiesHead, Map->WeatherInstance);
+            update_UpdateEntities(&Map->EntitiesHead, Map->BarriersHead);
+            update_UpdateWeather(Map->WeatherInstance);
+        } else {
+            editor_Update(&Player, InputKeys, MouseState, Map->BarriersHead, Map->EntitiesHead, Map->WeatherInstance);
+        }
 
         // Rendering Code Here
         // Offset the camera to the player's position.

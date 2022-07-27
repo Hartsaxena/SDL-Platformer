@@ -5,6 +5,7 @@ This super short header file only has one constant macro, which controls whether
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#define DEBUG_MODE 0 // Set to 1 to enable debug mode.
+#define DEBUG_MODE 1 // Set to 1 to enable debug mode.
+#define LEVEL_EDITOR_MODE 1 // Set to 1 to enable level editor mode.
 
 #endif

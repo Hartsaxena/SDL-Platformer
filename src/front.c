@@ -61,7 +61,19 @@ int front_Init()
 }
 
 
-bool front_HandleInputs(SDL_Event* InputEvent, bool InputKeys[286])
+void front_InitMouseState(front_MouseState* MouseState)
+{
+    /*
+    This function initializes the MouseState struct.
+    */
+    for (int i = 0; i < 5; i++)
+        MouseState->ButtonStates[i] = false;
+    MouseState->x = 0;
+    MouseState->y = 0;
+}
+
+
+bool front_HandleInputs(SDL_Event* InputEvent, bool InputKeys[286], front_MouseState* MouseState)
 {
     /*
     This function handles all input events. It returns true if the game should continue running, false if it should quit.
@@ -75,6 +87,20 @@ bool front_HandleInputs(SDL_Event* InputEvent, bool InputKeys[286])
             }
             case SDL_KEYUP: {
                 InputKeys[InputEvent->key.keysym.scancode] = false;
+                break;
+            }
+            
+            case SDL_MOUSEBUTTONDOWN: {
+                MouseState->ButtonStates[InputEvent->button.button] = true;
+                break;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                MouseState->ButtonStates[InputEvent->button.button] = false;
+                break;
+            }
+            case SDL_MOUSEMOTION: {
+                MouseState->x = InputEvent->motion.x;
+                MouseState->y = InputEvent->motion.y;
                 break;
             }
 
