@@ -1,7 +1,9 @@
-Basic level editor features:
-  - Created "level editor mode", which runs if specified in debug.h
-  - Added mouse inputs, handled in front.c just like keyboard inputs.
-  - Basic barrier and entity moving with mouse
+Level Editor Update:
+  - Added barrier scaling
+  - Added creating new barriers using "CTRL + N" chords
+  - Added saving using "CTRL + S" in Level Editor
+    - Creates a new folder called "NEW" in the maps folder, which contains the saved data.
+  - Note: Have not added weather data editing or saving.
 
-Notes:
-  - Discarded changes of previous commit, which ran the level editor as a separate project. Now the level editor runs as an extension of the main game.
+Next Update:
+  - Add documentation to changes.

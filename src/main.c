@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
     if (DEBUG_MODE)
         printf("Parsing map data... \n");
-    obj_Map* Map = parse_ParseMapFolder("maps\\test");
+    obj_Map* Map = parse_ParseMapFolder("maps\\NEW");
     if (DEBUG_MODE)
         printf("Succesfully parsed map data!\n");
 

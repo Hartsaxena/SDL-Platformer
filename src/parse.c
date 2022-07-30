@@ -71,6 +71,8 @@ Where the rectangle's topleft corner is situated at (100, 100) (Coordinates are 
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <SDL2\\SDL.h>
 
 #include "obj.h"
@@ -165,7 +167,7 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
     Parses the Ent file and returns a linked list of entities (obj_Entity).
 
     Entity format:
-    Is Enemy[0, 1]:(int)X:(int)Y:(int)W:(int)H:Speed Specifier[SPEED, NSPEED]:(int)Speed Value (if Speed Specifier is SPEED):Domain Format (see below):Direction[0, 1] (0 = left, 1 = right)
+    Is Enemy[0, 1]:(int)X:(int)Y:(int)W:(int)H:Speed Specifier[SPEED, NSPEED]:(int)Speed Value (if Speed Specifier is SPEED):Domain Format (see below):Direction Specifier[DIR, NDIR]:Direction[0, 1] (0 = left, 1 = right) (if Direction Specifier is DIR)
 
     Domain Format:
     NDOMAIN (no domain) OR:
@@ -271,7 +273,7 @@ obj_Entity* parse_ParseEntFile(char* FilePath)
         SplitToken = strtok(NULL, Splitter);
         if (strcmp(SplitToken, "DIR") == 0) {
             SplitToken = strtok(NULL, Splitter);
-            if (strcmp(SplitToken, "1") == 0) {
+            if (strcmp(SplitToken, "1\n") == 0) { // The newline is important, but should be removed later.
                 EntityDirection = true;
             } else {
                 EntityDirection = false;
@@ -414,4 +416,79 @@ obj_Map* parse_ParseMapFolder(char* FolderPath)
 
 
     return ParseMap;
+}
+
+
+void parse_SaveBarrFile(obj_Barrier* BarriersHead, char* BarrFilePath)
+{
+    FILE* BarrFile = fopen(BarrFilePath, "w");
+
+    char* BarrierString;
+    for (obj_Barrier* BarrierPtr = BarriersHead; BarrierPtr != NULL; BarrierPtr = BarrierPtr->next) {
+        BarrierString = malloc(sizeof(char) * 256);
+        switch (BarrierPtr->Type) {
+            case OBJ_BARRIER_TYPE_WALL:
+                sprintf(BarrierString, "B:%d:%d:%d:%d", BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
+                break;
+            case OBJ_BARRIER_TYPE_VOID:
+                sprintf(BarrierString, "V:%d:%d:%d:%d", BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
+                break;
+            case OBJ_BARRIER_TYPE_PLATFORM:
+                sprintf(BarrierString, "P:%d:%d:%d:%d", BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
+                break;
+        }
+        sprintf(BarrierString, "%s\n", BarrierString);
+
+        fprintf(BarrFile, BarrierString);
+    }
+
+    fclose(BarrFile);
+}
+
+
+void parse_SaveEntFile(obj_Entity* EntitiesHead, char* EntFilePath)
+{
+    FILE* EntFile = fopen(EntFilePath, "w");
+    
+    char* EntityString;
+    char* DomainFormat;
+    for (obj_Entity* EntityPtr = EntitiesHead; EntityPtr != NULL; EntityPtr = EntityPtr->next) {
+        EntityString = malloc(sizeof(char) * 512);
+        DomainFormat = malloc(sizeof(char) * 256);
+
+        sprintf(DomainFormat, "XDOMAIN:%d:%d:YDOMAIN:%d:%d",
+                EntityPtr->Domain_left, EntityPtr->Domain_right,
+                EntityPtr->Domain_top, EntityPtr->Domain_bottom);
+
+        sprintf(EntityString, "%d:%d:%d:%d:%d:SPEED:%d:%s:DIR:%d",
+                (int)EntityPtr->IsEnemy,
+                EntityPtr->Hitbox.x, EntityPtr->Hitbox.y, EntityPtr->Hitbox.w, EntityPtr->Hitbox.h,
+                EntityPtr->Speed,
+                DomainFormat,
+                (int)EntityPtr->Direction);
+
+        sprintf(EntityString, "%s\n", EntityString);
+
+        fprintf(EntFile, EntityString);
+    }
+
+    fclose(EntFile);
+}
+
+
+void parse_SaveMap(obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, const char* NewMapDir)
+{
+    int Success = mkdir(NewMapDir);
+    if (Success == -1) {
+        printf("FATAL ERROR: Could not create directory %s.\n", NewMapDir);
+        front_Quit();
+    }
+
+    char* BarrFilePath = malloc(sizeof(char) * (strlen(NewMapDir) + strlen("\\barr") + 1));
+    char* EntFilePath = malloc(sizeof(char) * (strlen(NewMapDir) + strlen("\\ent") + 1));
+    sprintf(BarrFilePath, "%s\\barr", NewMapDir);
+    sprintf(EntFilePath, "%s\\ent", NewMapDir);
+
+    parse_SaveBarrFile(BarriersHead, BarrFilePath);
+    parse_SaveEntFile(EntitiesHead, EntFilePath);
 }

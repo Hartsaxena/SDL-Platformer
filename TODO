@@ -1,4 +1,6 @@
-Create Level Editor
+Add Screen scrolling to level editor
+Add more Entity editing options to level editor
+Add menu to select levels
 More Comments + Write Purpose of each file (ALWAYS ACTIVE)
 Maybe reformat constant variables to use enumeration.
 Player Lives / Respawn Mechanic ***

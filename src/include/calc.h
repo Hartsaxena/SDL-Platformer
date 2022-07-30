@@ -12,6 +12,7 @@
 
 
 bool calc_IsPointInsideRect(int x, int y, SDL_Rect Rect);
+double calc_Distance(int x1, int y1, int x2, int y2);
 
 
 #endif
