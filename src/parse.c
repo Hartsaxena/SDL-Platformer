@@ -428,13 +428,16 @@ void parse_SaveBarrFile(obj_Barrier* BarriersHead, char* BarrFilePath)
         BarrierString = malloc(sizeof(char) * 256);
         switch (BarrierPtr->Type) {
             case OBJ_BARRIER_TYPE_WALL:
-                sprintf(BarrierString, "B:%d:%d:%d:%d", BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
+                sprintf(BarrierString, "B:%d:%d:%d:%d",
+                        BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
                 break;
             case OBJ_BARRIER_TYPE_VOID:
-                sprintf(BarrierString, "V:%d:%d:%d:%d", BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
+                sprintf(BarrierString, "V:%d:%d:%d:%d",
+                        BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
                 break;
             case OBJ_BARRIER_TYPE_PLATFORM:
-                sprintf(BarrierString, "P:%d:%d:%d:%d", BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
+                sprintf(BarrierString, "P:%d:%d:%d:%d",
+                        BarrierPtr->Rect.x, BarrierPtr->Rect.y, BarrierPtr->Rect.w, BarrierPtr->Rect.h);
                 break;
         }
         sprintf(BarrierString, "%s\n", BarrierString);
@@ -456,9 +459,23 @@ void parse_SaveEntFile(obj_Entity* EntitiesHead, char* EntFilePath)
         EntityString = malloc(sizeof(char) * 512);
         DomainFormat = malloc(sizeof(char) * 256);
 
-        sprintf(DomainFormat, "XDOMAIN:%d:%d:YDOMAIN:%d:%d",
-                EntityPtr->Domain_left, EntityPtr->Domain_right,
-                EntityPtr->Domain_top, EntityPtr->Domain_bottom);
+        if (EntityPtr->Domain_left == -1 && EntityPtr->Domain_top == -1) {
+            sprintf(DomainFormat, "NDOMAIN");
+        } else {
+            if (EntityPtr->Domain_left == -1) {
+                sprintf(DomainFormat, "NXDOMAIN");
+            } else {
+                sprintf(DomainFormat, "XDOMAIN:%d:%d",
+                        EntityPtr->Domain_left, EntityPtr->Domain_right);
+            }
+            if (EntityPtr->Domain_top == -1) {
+                sprintf(DomainFormat, "%s:NYDOMAIN", DomainFormat);
+            } else {
+                sprintf(DomainFormat, "%s:YDOMAIN:%d:%d",
+                        DomainFormat,
+                        EntityPtr->Domain_top, EntityPtr->Domain_bottom);
+            }
+        }
 
         sprintf(EntityString, "%d:%d:%d:%d:%d:SPEED:%d:%s:DIR:%d",
                 (int)EntityPtr->IsEnemy,
@@ -476,7 +493,25 @@ void parse_SaveEntFile(obj_Entity* EntitiesHead, char* EntFilePath)
 }
 
 
-void parse_SaveMap(obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, const char* NewMapDir)
+void parse_SaveWthrFile(weather_Weather* WeatherHead, char* WthrFilePath)
+{
+    // (float)Direction:(float)Strength:(int)Duration
+    FILE* WthrFile = fopen(WthrFilePath, "w");
+    
+    char* WeatherString;
+    for (weather_Weather* WeatherPtr = WeatherHead; WeatherPtr != NULL; WeatherPtr = WeatherPtr->next) {
+        WeatherString = malloc(sizeof(char) * 512);
+
+        sprintf(WeatherString, "%f:%f:%d\n", WeatherPtr->Direction, WeatherPtr->Strength, WeatherPtr->Time);
+
+        fprintf(WthrFile, WeatherString);
+    }
+
+    fclose(WthrFile);
+}
+
+
+void parse_SaveMap(obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, weather_Weather* WeatherHead, const char* NewMapDir)
 {
     int Success = mkdir(NewMapDir);
     if (Success == -1) {
@@ -486,9 +521,12 @@ void parse_SaveMap(obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, const ch
 
     char* BarrFilePath = malloc(sizeof(char) * (strlen(NewMapDir) + strlen("\\barr") + 1));
     char* EntFilePath = malloc(sizeof(char) * (strlen(NewMapDir) + strlen("\\ent") + 1));
+    char* WthrFilePath = malloc(sizeof(char) * (strlen(NewMapDir) + strlen("\\wthr") + 1));
     sprintf(BarrFilePath, "%s\\barr", NewMapDir);
     sprintf(EntFilePath, "%s\\ent", NewMapDir);
+    sprintf(WthrFilePath, "%s\\wthr", NewMapDir);
 
     parse_SaveBarrFile(BarriersHead, BarrFilePath);
     parse_SaveEntFile(EntitiesHead, EntFilePath);
+    parse_SaveWthrFile(WeatherHead, WthrFilePath);
 }

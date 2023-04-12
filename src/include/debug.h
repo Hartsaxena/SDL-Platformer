@@ -8,7 +8,7 @@ The Level editor is for development as well, and is used to create levels.
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#define DEBUG_MODE 0 // Set to 1 to enable debug mode.
+#define DEBUG_MODE 1 // Set to 1 to enable debug mode.
 #define LEVEL_EDITOR_MODE 0 // Set to 1 to enable level editor mode.
 
 #endif

@@ -11,8 +11,9 @@ This file contains methods that render all objects in the game. Calculations for
 #include "parse.h"
 #include "player.h"
 
-
-static int Camera_x = 0, Camera_y = 0;
+static int CameraX = 0, CameraY = 0;
+int* render_CameraX = &CameraX;
+int* render_CameraY = &CameraY;
 
 void render_FillScreenColor(SDL_Renderer* Renderer, int Color[3], int Alpha)
 {
@@ -23,7 +24,7 @@ void render_FillScreenColor(SDL_Renderer* Renderer, int Color[3], int Alpha)
 
 void render_DrawRect(SDL_Renderer* Renderer, SDL_Rect Rect, int Color[3], int Alpha)
 {
-    SDL_Rect OffsetRect = {Rect.x + Camera_x, Rect.y + Camera_y, Rect.w, Rect.h};
+    SDL_Rect OffsetRect = {Rect.x + CameraX, Rect.y + CameraY, Rect.w, Rect.h};
     SDL_RenderDrawRect(Renderer, &OffsetRect);
     SDL_SetRenderDrawColor(Renderer, Color[0], Color[1], Color[2], Alpha);
     SDL_RenderFillRect(Renderer, &OffsetRect);
@@ -105,6 +106,16 @@ void render_RenderEntities(SDL_Renderer* Renderer, obj_Entity* Entities)
 
 void render_UpdateCamera(player_Player* Player)
 {
-    Camera_x = (front_SCREENX / 2) - Player->Hitbox.x;
-    Camera_y = 0; // Not horizontal scrolling
+    CameraX = (front_SCREENX / 2) - Player->Hitbox.x;
+    CameraY = 0; // No horizontal scrolling
+}
+
+
+int* render_GetGlobalMousePosition(int MouseX, int MouseY)
+{
+    // Find the global position of a point relative to the camera.
+    int* GlobalPosition = malloc(sizeof(int) * 2);
+    GlobalPosition[0] = MouseX + CameraX;
+    GlobalPosition[1] = MouseY + CameraY;
+    return GlobalPosition;
 }

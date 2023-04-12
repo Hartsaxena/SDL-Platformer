@@ -15,6 +15,7 @@
 #include "obj.h"
 #include "parse.h"
 #include "player.h"
+#include "render.h"
 #include "weather.h"
 
 
@@ -84,11 +85,17 @@ void editor_DeleteNEWFolder()
 static editor_Selection* Selection = NULL;
 static bool AwaitChord = false;
 static int PreviousSaveTime = 0;
+extern int* render_CameraX;
+extern int* render_CameraY;
 void editor_Update(player_Player* Player, bool InputKeys[286], front_MouseState* MouseState, obj_Barrier* BarriersHead, obj_Entity* EntitiesHead, weather_Weather* WeatherInstance)
 {
     if (Selection == NULL) {
         Selection = malloc(sizeof(editor_Selection));
     }
+
+    int* GlobalMousePosition = render_GetGlobalMousePosition(MouseState->x, MouseState->y);
+    int GlobalMouseX = GlobalMousePosition[0];
+    int GlobalMouseY = GlobalMousePosition[1];
 
     if (InputKeys[SDL_SCANCODE_LCTRL] && InputKeys[SDL_SCANCODE_S] && !AwaitChord) {
         // Only allow save every once in a while.
@@ -96,7 +103,7 @@ void editor_Update(player_Player* Player, bool InputKeys[286], front_MouseState*
             if (DEBUG_MODE)
                 printf("CTRL S pressed. Saving level.\n");
             editor_DeleteNEWFolder();
-            parse_SaveMap(BarriersHead, EntitiesHead, "maps\\NEW");
+            parse_SaveMap(BarriersHead, EntitiesHead, WeatherInstance, "maps\\NEW");
             if (DEBUG_MODE)
                 printf("Level saved.\n");
             PreviousSaveTime = time(0);
@@ -138,8 +145,8 @@ void editor_Update(player_Player* Player, bool InputKeys[286], front_MouseState*
             }
 
             NewBarrier->Rect = (SDL_Rect) {
-                .x = MouseState->x,
-                .y = MouseState->y,
+                .x = GlobalMouseX,
+                .y = GlobalMouseY,
                 .w = EDITOR_DEFAULT_WBARRIER_WIDTH,
                 .h = EDITOR_DEFAULT_WBARRIER_HEIGHT
             };
@@ -153,6 +160,28 @@ void editor_Update(player_Player* Player, bool InputKeys[286], front_MouseState*
             Temp->next = NewBarrier;
         }
     }
+
+    // Move camera with arrow keys
+    int NewCameraX = *render_CameraX;
+    int NewCameraY = *render_CameraY;
+    if (InputKeys[SDL_SCANCODE_UP]) {
+        NewCameraY -= EDITOR_CAMERA_SPEED;
+        printf("Up arrow pressed. Moving camera position to (%d, %d).\n", NewCameraX, NewCameraY);
+    }
+    if (InputKeys[SDL_SCANCODE_DOWN]) {
+        NewCameraY += EDITOR_CAMERA_SPEED;
+        printf("Down arrow pressed. Moving camera position to (%d, %d).\n", NewCameraX, NewCameraY);
+    }
+    if (InputKeys[SDL_SCANCODE_LEFT]) {
+        NewCameraX -= EDITOR_CAMERA_SPEED;
+        printf("Left arrow pressed. Moving camera position to (%d, %d).\n", NewCameraX, NewCameraY);
+    }
+    if (InputKeys[SDL_SCANCODE_RIGHT]) {
+        NewCameraX += EDITOR_CAMERA_SPEED;
+        printf("Right arrow pressed. Moving camera position to (%d, %d).\n", NewCameraX, NewCameraY);
+    }
+    *render_CameraX = NewCameraX;
+    *render_CameraY = NewCameraY;
 
     // Mouse Inputs
     bool LeftMouseButton = MouseState->ButtonStates[SDL_BUTTON_LEFT];
@@ -220,6 +249,7 @@ void editor_Update(player_Player* Player, bool InputKeys[286], front_MouseState*
         Selection->SelectedPointID = EDITOR_SELECTION_ID_NONE;
         Selection->SelectedEntity = NULL;
     }
+
 
     if (Selection->SelectedBarrier != NULL) {
         // Pointers to make code more readable.

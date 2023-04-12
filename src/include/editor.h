@@ -6,6 +6,7 @@
 #include "front.h"
 #include "obj.h"
 #include "player.h"
+#include "render.h"
 #include "weather.h"
 
 #define EDITOR_OBJ_DISTANCE_SNAP 15
@@ -19,6 +20,8 @@
 
 #define EDITOR_DEFAULT_WBARRIER_WIDTH 100
 #define EDITOR_DEFAULT_WBARRIER_HEIGHT 100
+
+#define EDITOR_CAMERA_SPEED 15
 
 #define EDITOR_SAVE_DELAY_MS 5000
 

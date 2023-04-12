@@ -18,6 +18,10 @@ void render_RenderBarriers(SDL_Renderer* Renderer, obj_Barrier* Barriers);
 void render_DrawEntity(SDL_Renderer* Renderer, obj_Entity* Entity);
 void render_RenderEntities(SDL_Renderer* Renderer, obj_Entity* Entities);
 
+int render_GetCameraCenterX();
+int render_GetCameraCenterY();
 void render_UpdateCamera(player_Player* Player);
+void render_ChangeCamera(int x, int y);
+int* render_GetGlobalMousePosition(int MouseX, int MouseY);
 
 #endif

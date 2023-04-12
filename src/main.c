@@ -62,6 +62,11 @@ int main(int argc, char* argv[])
 
     if (DEBUG_MODE)
         printf("Parsing map data... \n");
+    char* ParsedMapPath = "maps\\test";
+    if (LEVEL_EDITOR_MODE && strcmp(ParsedMapPath, "maps\\NEW") == 0) {
+        printf("Cannot use level editor with the maps\\NEW map. Use a different map, or rename the NEW map.\n");
+        front_Quit();
+    }
     obj_Map* Map = parse_ParseMapFolder("maps\\NEW");
     if (DEBUG_MODE)
         printf("Succesfully parsed map data!\n");
